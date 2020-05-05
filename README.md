@@ -9,5 +9,7 @@ Linux 多线程服务端编程
 
 #### 编译
 ```
-Cmake
+Cmake CMakeLists.text
+
+make
 ```
