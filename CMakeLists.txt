@@ -21,9 +21,4 @@ add_executable(muduo_study
         Epoll.cpp
         Epoll.h
         base/Types.h
-        Timer/TimerQueue.cpp
-        Timer/TimerQueue.h
-        Timer/TimerQueuebase.cpp
-        Timer/TimerQueuebase.h
-        Timer/Timer.cpp
-        Timer/Timer.h)
+        )
