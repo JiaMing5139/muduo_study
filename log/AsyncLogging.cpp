@@ -7,7 +7,6 @@
 #include <assert.h>
 #include <chrono>
 #include "appendFile.h"
-#include "debug.h"
 AsyncLogging::AsyncLogging(std::string name):
 mutex_(),
 cond_(),

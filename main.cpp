@@ -8,7 +8,6 @@
 #include <memory>
 #include <sys/timerfd.h>
 #include <string.h>
-#include "Timer/Timer.h"
 #include "log/AsyncLogging.h"
 #include "log/appendFile.h"
 
