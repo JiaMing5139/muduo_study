@@ -32,10 +32,12 @@ void EventLoop::loop() {
 
     while(!quit_){
         poll_->poller_wait(-1,&activedChannls);
-        LOG_TRACE << "actived Channels size" << activedChannls.size();
+        LOG_TRACE << "actived Channels size:" << activedChannls.size();
         for(const auto channel: activedChannls){
             channel->handleEvent();
         }
+
+        activedChannls.clear();
     }
 
     looping_ = false;

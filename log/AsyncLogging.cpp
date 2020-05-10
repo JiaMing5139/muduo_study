@@ -12,7 +12,8 @@ mutex_(),
 cond_(),
 currentBuffer_(new Buffer),
 nextBuffer_(new Buffer),
-buffersptr_(new Buffers)
+buffersptr_(new Buffers),
+name_(name)
 {
     currentBuffer_->bzero();
     nextBuffer_->bzero();
@@ -46,7 +47,7 @@ void AsyncLogging::append(const char * msg, size_t len) {
 }
 
 void AsyncLogging::threadFunc() {
-    appendFile output("asynglogtest");
+    appendFile output(name_); // FIXME
     Bufferptr Buffer1(new Buffer);
     Bufferptr Buffer2(new Buffer);
     std::unique_ptr<Buffers> newbuffers(new Buffers);

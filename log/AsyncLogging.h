@@ -18,7 +18,7 @@
 
 class AsyncLogging :noncopyable{
 public:
-    AsyncLogging(std::string name);
+    explicit AsyncLogging(std::string name);
     void append(const char * msg, size_t len);
     void start(){
         std::thread t(std::bind(&AsyncLogging::threadFunc,this));
@@ -36,6 +36,7 @@ public:
 private:
     void threadFunc();
 
+    std::string name_;
     std::atomic<bool> isRunning_;
     typedef FixedBuffer<4000000> Buffer;
     typedef std::unique_ptr<Buffer> Bufferptr;

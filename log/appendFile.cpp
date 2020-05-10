@@ -5,6 +5,8 @@
 #include "appendFile.h"
 #include <assert.h>
 
+#include <utility>
+
 size_t appendFile::write(const char *logline, size_t len) {
     return fwrite(logline,len,sizeof(char),fp_);
 }
@@ -26,7 +28,19 @@ appendFile::~appendFile() {
     fclose(fp_);
 }
 
-appendFile::appendFile(std::string filename):fp_(::fopen(filename.c_str(),"ae")) {
+
+FILE* openfile(std::string filename){
+    FILE * file = ::fopen(filename.c_str(),"ab");
+    if(file == NULL){
+        perror("fopen");
+        abort();
+    }
+    return file;
+}
+
+appendFile::appendFile(std::string filename):fp_(openfile(std::move(filename))) {
     assert(fp_);
     setbuffer(fp_,buffer_,sizeof buffer_);
 }
+
+

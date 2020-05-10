@@ -14,7 +14,7 @@ Logger::LogLevel initLogLevel(){
 }
 
 void defaultoutput(const char * msg,size_t len){
-    std::cout << msg << std::endl;
+    std::cout << msg ;
 }
 
 Logger::Output Logger::output = defaultoutput;
