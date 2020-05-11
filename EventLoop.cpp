@@ -30,7 +30,8 @@ EventLoop::EventLoop() :
         timerQueue(this),
         wakeUpfd_(createEventfd()),
         wakeupChannel_(new Channel( this,wakeUpfd_)),
-        doingFunctors(false)
+        doingFunctors(false),
+        callingPendingFunctors_(false)
         {
     LOG_TRACE << "genernate a new loop in thread::" << threadId_;
     if(loop_ ){
