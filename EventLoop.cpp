@@ -86,7 +86,10 @@ EventLoop::~EventLoop() {
 }
 
 void EventLoop::quit() {
-   quit_ = true;
+    if(quit_== false){
+        quit_ = true;
+        wakeup();
+    }
 }
 
 void EventLoop::runAt(Timestamp timerstamp, TimerCallback cb) {

@@ -10,9 +10,11 @@
 #include <string.h>
 #include "log/AsyncLogging.h"
 #include "log/appendFile.h"
-
+#include "EventLoopThread.h"
 #include "Timer/TimerQueue.h"
+#include "base/currentThread.h"
 #include <unistd.h>
+
 
 
 /**  Test Asynlog  **/
@@ -91,13 +93,27 @@ void testRunInLoop(){
 
     loop->loop();
 }
-
-
+/**  Test EventLoopThread  **/
+void runInThread()
+{
+    printf("runInThread(): pid = %d, tid = %d\n",
+           getpid(), Jimmy::CurrentThread::tid());
+}
+void testEventLoopThread(){
+    EventLoopThread t;
+    EventLoop * loop_ =  t.startLoop();
+    loop_->runInLoop(runInThread);
+    usleep(1);
+    loop_->runAfter(2, runInThread);
+    sleep(3);
+    loop_->quit();
+}
 
 int main() {
     //loggerTest();
     //testEventLoop();
     //testTimerQueue();
-    testRunInLoop();
+    //testRunInLoop();
+   // testEventLoopThread();
 
 }
