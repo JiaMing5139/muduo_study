@@ -24,13 +24,14 @@ void g_output(const char * msg,size_t len){
 
 void setAsynLog(){
     Jimmy::Logger::setOutput(g_output);
+    asyn->start();
 }
 
-void loggerTest(){
-    asyn->start();
+void loggerTest() {
     setAsynLog();
     LOG_TRACE << "testLog";
 }
+
 
 /**  Test Reactor  **/
 EventLoop* loop ;
@@ -44,7 +45,6 @@ void testEventLoop(){
     int timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     struct itimerspec howlong;
     bzero(&howlong,sizeof howlong);
-
     howlong.it_value.tv_sec = 10;
     timerfd_settime(timerfd,0,&howlong,NULL);
     std::shared_ptr<Channel> channelptr (new Channel(loop,timerfd));
@@ -52,21 +52,44 @@ void testEventLoop(){
     channelptr->enableRead();
     loop->loop();
 }
-
+/**  Test Reactor  **/
 void testTimerQueue(){
     // loggerTest();
     loop= new EventLoop;
     TimerQueue base(loop);
     Timestamp timestamp(Timestamp::now());
 
-    base.addTimer( addTime(timestamp,1.0),std::bind(timeout, 1),0);
-    base.addTimer( addTime(timestamp,1.0),std::bind(timeout, 1),0);
-    base.addTimer( addTime(timestamp,1.0),std::bind(timeout, 1),0);
-    base.addTimer( addTime(timestamp,3.0),std::bind(timeout, 1),0);
-//    base.addTimer( addTime(timestamp,5.0),timeout,0);
-//    base.addTimer( addTime(timestamp,5.0),timeout,0);
-    loop->loop();
+    std::thread t([](){
+        loop->runAfter(3,std::bind(&timeout, 1));
+    });
 
+
+    loop->loop();
+    t.join();
+}
+
+/**  Test RunInloop  **/
+
+
+void testRunInLoop(){
+    loop= new EventLoop;
+    std::thread test([](){
+
+        loop->runInLoop([](){
+            std::cout << "run in loop 1" << std::endl;
+            loop->runInLoop([](){
+                std::cout << "run in loop loop" << std::endl;
+            });
+
+        });
+
+
+    });
+    std::thread t([](){
+        loop->runAfter(3,std::bind(&timeout, 1));
+    });
+
+    loop->loop();
 }
 
 
@@ -74,6 +97,7 @@ void testTimerQueue(){
 int main() {
     //loggerTest();
     //testEventLoop();
-    testTimerQueue();
+    //testTimerQueue();
+    testRunInLoop();
 
 }

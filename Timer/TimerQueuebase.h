@@ -6,7 +6,7 @@
 #define MUDUO_STUDY_TIMERQUEUEBASE_H
 
 
-#include "../EventLoop.h"
+#include <vector>
 #include "Timer.h"
 #include <set>
 #include <memory>
@@ -24,8 +24,10 @@ public:
     void addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval);
     void cancel();
 
-
+    void addTimerInLoop(std::shared_ptr<Timer> timer);
 private:
+
+
 
     bool insert(std::shared_ptr<Timer> timer);
     void handleEvent();

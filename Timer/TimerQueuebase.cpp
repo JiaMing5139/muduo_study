@@ -4,11 +4,13 @@
 
 #include "TimerQueuebase.h"
 #include "Timestamp.h"
+#include "../EventLoop.h"
 #include <sys/timerfd.h>
 #include "../log/logger.h"
 #include "../Channel.h"
 #include <string.h>
 #include <unistd.h>
+#include "../base/CallBack.h"
 TimerQueuebase::TimerQueuebase(EventLoop *loop):
 timerFd_(createTimerFd()),
 loop_(loop),
@@ -18,14 +20,19 @@ channel_(new Channel(loop,timerFd_))
     channel_->enableRead();
 
 }
+void TimerQueuebase::addTimerInLoop(std::shared_ptr<Timer> timer) {
+    loop_->assertInLoopThread();
+
+    if (insert(timer)) {
+        //true : saying that this is the earlist timer in the set,so we need reset the time of timerfd, make it equal to the earlist timer
+        reset(timer->expiration());
+    }
+}
 
 void TimerQueuebase::addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval) {
-    LOG_TRACE<<"addTimer : Timestamp of timer:" << timestamp ;
-    std::unique_ptr<Timer> timer(new Timer(cb,timestamp,interval));
-    if(insert(std::move(timer))){
-        //true : saying that this is the earlist timer in the set,so we need reset the time of timerfd, make it equal to the earlist timer
-        reset(timestamp);
-    }
+    std::shared_ptr<Timer> timer(new Timer(cb,timestamp,interval));
+    loop_->runInLoop(std::bind(&TimerQueuebase::addTimerInLoop,this,timer));
+
 }
 
 void TimerQueuebase::cancel() {
@@ -125,4 +132,6 @@ bool TimerQueuebase::insert(std::shared_ptr<Timer> timer) {
     auto ret =  timerList_.emplace(timer->expiration(),std::move(timer));
     return ret.second && ret.first == timerList_.begin();
 }
+
+
 
