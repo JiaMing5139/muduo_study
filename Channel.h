@@ -9,9 +9,11 @@
 #include "base/noncopyable.h"
 #include <memory>
 class EventLoop;
-class Channel: noncopyable, public std::enable_shared_from_this<Channel> {
+class Channel: public noncopyable, public std::enable_shared_from_this<Channel> {
     typedef std::function<void ()> EventCallback;
+
 public:
+    typedef std::shared_ptr<Channel> Channelptr;
     Channel() = delete;
     Channel(EventLoop* loop, int fd);
 

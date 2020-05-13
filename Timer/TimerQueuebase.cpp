@@ -61,7 +61,7 @@ void readTimerfd(int fd){
     LOG_TRACE << "TimerQueue::handleRead() " << howmany;
     if (n != sizeof howmany)
     {
-        SYSERROR_LOG << "TimerQueue::handleRead() reads " << n << " bytes instead of 8";
+        LOG_SYSFATAL << "TimerQueue::handleRead() reads " << n << " bytes instead of 8";
     }
 }
 
@@ -76,9 +76,7 @@ void TimerQueuebase::reset(Timestamp timestamp) {
     new_time.it_value = howMuchTimeFromNow(timestamp);
     int ret = timerfd_settime(timerFd_,0,&new_time,&old_time);
     if(ret == -1){
-        SYSERROR_LOG << "timerfd_set";
-        perror("timerfd");
-        abort();
+        LOG_SYSFATAL << "timerfd_set";
     }
 
 }
@@ -86,8 +84,7 @@ void TimerQueuebase::reset(Timestamp timestamp) {
 int TimerQueuebase::createTimerFd() {
     int ret = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC) ;
     if(ret == -1){
-        SYSERROR_LOG << "timerfd_create";
-        abort();
+        LOG_SYSFATAL << "timerfd_create";
     }
     return ret;
 }

@@ -6,12 +6,14 @@
 #include <iostream>
 #include <time.h>
 #include <sstream>
+#include <string.h>
 #include "../base/currentThread.h"
 namespace Jimmy {
 Logger::LogLevel initLogLevel(){
     //fixme from a config or env
     return Logger::DEBUG;
 }
+__thread char t_errnobuf[512];
 
 void defaultoutput(const char * msg,size_t len){
     std::cout << msg ;
@@ -26,7 +28,9 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
 }
 
 
-    Logger::Logger(const std::string & file, int line, Logger::LogLevel level, const char *func) {
+    Logger::Logger(const std::string & file, int line, Logger::LogLevel level, const char *func,bool ifabort):
+    ifabort(ifabort)
+    {
         time_t seconds = ::time(nullptr);
         auto locoaltimeStruct = localtime(&seconds);
         std::string time_s(asctime(locoaltimeStruct));
@@ -42,14 +46,31 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
     }
 
 
+
+
+
+
     Logger::~Logger() {
+        if(errno >0 ){
+            strcpy(t_errnobuf,strerror_r(errno,t_errnobuf,sizeof t_errnobuf));
+            _os <<" errno:" << errno <<" ";
+           _os << t_errnobuf;
+        }
         _os << std::endl;
         Logger::output(_os.str().c_str(),_os.str().size());
+
+
+        if(ifabort){
+
+            abort();
+        }
+
     }
 
     void Logger::setOutput(Output out) {
         Logger::output = std::move(out);
     }
+
 
 
 }

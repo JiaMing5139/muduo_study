@@ -14,6 +14,8 @@
 #include "Timer/TimerQueue.h"
 #include "base/currentThread.h"
 #include <unistd.h>
+#include "Socket.h"
+#include "Acceptor.h"
 
 
 
@@ -47,7 +49,7 @@ void testEventLoop(){
     int timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
     struct itimerspec howlong;
     bzero(&howlong,sizeof howlong);
-    howlong.it_value.tv_sec = 10;
+    howlong.it_value.tv_sec = 2;
     timerfd_settime(timerfd,0,&howlong,NULL);
     std::shared_ptr<Channel> channelptr (new Channel(loop,timerfd));
     channelptr->setReadCallBack(std::bind(timeout, timerfd));
@@ -109,11 +111,27 @@ void testEventLoopThread(){
     loop_->quit();
 }
 
+/** Test Acceptor**/
+void testAccepotr(){
+    loop= new EventLoop;
+    InetAddress addr(2335);
+    Acceptor acceptor(addr,loop);
+    acceptor.setNewConnectionCallback([](Acceptor::TcpConnectionptr conn){
+        LOG_TRACE<<"new connection";
+    });
+    acceptor.listen();
+    loop->loop();
+}
+
+/** Test Acceptor**/
+
+
 int main() {
-    //loggerTest();
+   // loggerTest();
     //testEventLoop();
     //testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
+    testAccepotr();
 
 }

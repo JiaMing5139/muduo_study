@@ -4,6 +4,7 @@
 #include "log/logger.h"
 #include "Epoll.h"
 #include <sys/eventfd.h>
+#include <assert.h>
 __thread EventLoop * loop_ = 0 ;
 int createEventfd(){
     int ret = eventfd(0,EFD_NONBLOCK);
@@ -77,7 +78,9 @@ void EventLoop::abortInthread() {
 }
 
 void EventLoop::update(EventLoop::Channelptr channel) {
+    //assert(channel->fd() >= 0);
     poll_->updateChannel(channel);
+
 
 }
 
