@@ -58,7 +58,7 @@ Timer/TimerQueueBase
 #### TcpConnection 生命周期
 
 # To do list
-Buffer
-Threadpoll of EventLoop
-connector
+- Buffer
+> Threadpoll of EventLoop
+- connector
 
