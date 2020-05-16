@@ -11,12 +11,13 @@
 class EventLoop;
 class Channel: public noncopyable, public std::enable_shared_from_this<Channel> {
     typedef std::function<void ()> EventCallback;
+    typedef std::function<void (int)> readCallback;
 
 public:
     typedef std::shared_ptr<Channel> Channelptr;
     Channel() = delete;
     Channel(EventLoop* loop, int fd);
-
+    ~Channel();
     void enableWrite(){events_ |= WriteEvent; update();}
     void enableRead() {events_ |= ReadEvent; update();}
 
@@ -26,9 +27,10 @@ public:
     void setIndex(int index){this->index_ = index;}
     int events() { return events_; }
     int setEvents(int events) {this->events_ = events;}
+
     int setRevents(int events){this->revents_ = events;}
     void handleEvent();
-    void setReadCallBack(EventCallback cb){
+    void setReadCallBack(readCallback cb){
         readEventCallback = cb;
     }
     void setWriteCallBack(EventCallback cb){
@@ -37,6 +39,7 @@ public:
     void setErrorCallBack(EventCallback cb){
         errorCallBack = cb;
     }
+    void removeself();
 
 private:
     static const int NoneEvent;
@@ -48,8 +51,11 @@ private:
     int index_;
     int events_;
     int revents_;
+
+
+    EventCallback closeCallback;
     EventCallback writeEventCallback;
-    EventCallback readEventCallback;
+    readCallback readEventCallback;
     EventCallback errorCallBack;
 
     EventLoop * loop_;

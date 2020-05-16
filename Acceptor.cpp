@@ -21,7 +21,8 @@ newConnectionCallback(std::move(cb))
 Acceptor::Acceptor(const InetAddress &addr,EventLoop * loop):
         loop_(loop),
         listenfd_(sockets::createNonblockingOrDie(AF_INET)),
-        channel_(new Channel(loop_,listenfd_.fd()))
+        channel_(new Channel(loop_,listenfd_.fd())),
+        localAddr_(addr)
 {
     LOG_TRACE <<"Accepotr created listenfd:" << channel_->fd() ;
     listenfd_.bindAddress(addr);
@@ -34,9 +35,8 @@ Acceptor::Acceptor(const InetAddress &addr,EventLoop * loop):
 void Acceptor::handleReadEvent() {
     InetAddress peerAddr;
     int fd = listenfd_.accept(&peerAddr);
-    TcpConnectionptr connectionptr(new TcpConnection);
     if(newConnectionCallback){
-        newConnectionCallback(std::move(connectionptr));
+        newConnectionCallback(fd,peerAddr);
     }
 
 }

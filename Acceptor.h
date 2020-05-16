@@ -5,16 +5,19 @@
 #ifndef MUDUO_STUDY_ACCEPTOR_H
 #define MUDUO_STUDY_ACCEPTOR_H
 
-#include "Channel.h"
+
 #include "InetAddress.h"
+#include <memory>
 #include "Socket.h"
+class Channel;
 class EventLoop;
 class TcpConnection;
 
 class Acceptor {
 public:
+    typedef std::shared_ptr<Channel> Channelptr;
     typedef std::shared_ptr<TcpConnection> TcpConnectionptr;
-    typedef std::function<void (TcpConnectionptr)> NewConnectionCallback;
+    typedef std::function<void (int fd,const InetAddress &)> NewConnectionCallback;
 
     explicit Acceptor(const InetAddress &,EventLoop * loop,NewConnectionCallback);
      Acceptor(const InetAddress &,EventLoop * loop);
@@ -24,10 +27,10 @@ public:
 private:
     NewConnectionCallback newConnectionCallback;
     void handleReadEvent();
-
+    InetAddress localAddr_;
     EventLoop* loop_;
     Socket listenfd_;
-    Channel::Channelptr channel_;
+    Channelptr channel_;
 
 
 };

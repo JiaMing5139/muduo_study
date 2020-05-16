@@ -26,6 +26,7 @@ public:
     ~EventLoop();
     void loop();
     void update(Channelptr channel);
+    void cancel(Channelptr channel);
     void quit();
 
 

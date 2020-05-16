@@ -60,7 +60,7 @@ void EventLoop::loop() {
         activedChannls.clear();
         poll_->poller_wait(-1,&activedChannls);
         LOG_TRACE << "actived Channels size:" << activedChannls.size();
-        for(const auto channel: activedChannls){
+        for(const auto &channel: activedChannls){
             channel->handleEvent();
         }
 
@@ -78,10 +78,13 @@ void EventLoop::abortInthread() {
 }
 
 void EventLoop::update(EventLoop::Channelptr channel) {
-    //assert(channel->fd() >= 0);
+    assert(channel->fd() >= 0);
     poll_->updateChannel(channel);
+}
 
-
+void EventLoop::cancel(EventLoop::Channelptr channel) {
+    assertInLoopThread();
+    poll_->removeChannel(channel);
 }
 
 EventLoop::~EventLoop() {
@@ -175,4 +178,6 @@ void EventLoop::wakeup() {
         abort();
     }
 }
+
+
 

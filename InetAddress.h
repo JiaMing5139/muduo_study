@@ -10,9 +10,13 @@
 #include <cstdint>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <ostream>
+class InetAddress;
+std::ostream & operator << (std::ostream & os,const InetAddress & inetAddress);
 
 class InetAddress: public Copyable {
 public:
+    friend  std::ostream & operator << (std::ostream & os,const InetAddress & inetAddress);
     explicit InetAddress(uint16_t port = 0, bool loopbackOnly = false, bool ipv6 = false);
 
 
@@ -36,6 +40,8 @@ private:
         struct sockaddr_in addr_;
         struct sockaddr_in6 addr6_;
     };
+    std::string ipstr_;
+    uint16_t portstr_;
 
 };
 

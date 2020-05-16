@@ -7,6 +7,7 @@
 #include <sys/poll.h>
 #include "log/logger.h"
 #include <assert.h>
+#include <unistd.h>
 const int Channel::NoneEvent = 0;
 const int Channel::ReadEvent = POLLIN | POLLPRI;
 const int Channel::WriteEvent = POLLOUT;
@@ -22,13 +23,17 @@ events_(0) {
 }
 
 void Channel::handleEvent() {
+    if(revents_ & POLLHUP){
+        LOG_TRACE<<"EVENT POLLUP:" <<" disconnected!";
+    }
+
     if(revents_&POLLNVAL){
         LOG_TRACE<<"WARN:" <<"POLLNVAL";
     }
 
     if(revents_ & (POLLIN|POLLPRI|POLLHUP)) {
         assert(readEventCallback);
-        readEventCallback();
+        readEventCallback(1);
     }
 
 
@@ -45,4 +50,16 @@ void Channel::handleEvent() {
 
 void Channel::update() {
     loop_->update(shared_from_this());
+}
+
+void Channel::removeself() {
+    loop_->cancel(shared_from_this());
+
+}
+
+Channel::~Channel() {
+   int ret =  close(fd_);
+   if(ret == -1)
+   LOG_SYSFATAL << " ~Channel close fd" ;
+
 }

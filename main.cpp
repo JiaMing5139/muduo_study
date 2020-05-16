@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include "Socket.h"
 #include "Acceptor.h"
+#include "TcpServer.h"
 
 
 
@@ -114,16 +115,29 @@ void testEventLoopThread(){
 /** Test Acceptor**/
 void testAccepotr(){
     loop= new EventLoop;
-    InetAddress addr(2335);
+    InetAddress addr(2337);
     Acceptor acceptor(addr,loop);
-    acceptor.setNewConnectionCallback([](Acceptor::TcpConnectionptr conn){
+    acceptor.setNewConnectionCallback([](int fd,const InetAddress & addr){
         LOG_TRACE<<"new connection";
     });
     acceptor.listen();
     loop->loop();
 }
 
-/** Test Acceptor**/
+/** Test Tcpserver**/
+void testTcpserver(){
+    loop= new EventLoop;
+    InetAddress addr(2333);
+    TcpServer tcpServer(addr,loop);
+    tcpServer.setOnMessageCallback([](const char* buff,TcpServer::TcpConnectionptr){
+        LOG_TRACE<<"onMessage: ReadConnectionacallback " << buff;
+    });
+    tcpServer.setOnConnectionCallback([](TcpServer::TcpConnectionptr){
+        LOG_TRACE<<"onConnection:" <<"new Connection!";
+
+    });
+    loop->loop();
+}
 
 
 int main() {
@@ -132,6 +146,7 @@ int main() {
     //testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
-    testAccepotr();
+    //testAccepotr();
+    testTcpserver();
 
 }

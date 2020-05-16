@@ -13,8 +13,14 @@ namespace {
     const int kAdded = 1;
 }
 
-void Epoll::removeChannel(Poller::Channelptr) {
+void Epoll::removeChannel(Poller::Channelptr channel) {
 assertInLoopThread();
+assert(channel->index() == kAdded);
+    if(channel->index() == kAdded){
+        update(EPOLL_CTL_DEL, channel);
+        channel->setIndex(kDeleted);
+        channels_.erase(channel->fd());
+    }
 }
 
 void Epoll::updateChannel(Poller::Channelptr channel) {
@@ -106,7 +112,8 @@ void Epoll::fillActiveChannels(int numEvents, Poller::Channelptrlist *actived) {
 
         Channelptr channel =  Poller::channels_[events_[index].data.fd];
         if(channel){
-            LOG_TRACE << "channel fd found:" << channel->fd();
+            LOG_TRACE << "activdchannel fd found:" << channel->fd() << "activedEvent:" << events_[index].events;
+
             channel->setRevents(events_[index].events);
             actived->push_back(channel);
         }else{
