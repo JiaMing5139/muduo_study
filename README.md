@@ -47,6 +47,8 @@ Timer/TimerQueueBase
 ```
 ###### Q3：Timer的线程安全性，Timer属于EventLoop，而EventLoop中的成员会被多个线程看到，如果在多个线程向TimerQueue添加如何保证安全？
 
+###### Q4: 如何实现对指定Timer的删除？
+
 ```
 
 ```
@@ -54,3 +56,9 @@ Timer/TimerQueueBase
 #### 异步日志
 
 #### TcpConnection 生命周期
+
+# To do list
+Buffer
+Threadpoll of EventLoop
+connector
+
