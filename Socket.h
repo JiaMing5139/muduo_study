@@ -17,7 +17,8 @@ public:
     void connect();
 
     int accept(InetAddress * peerAddr);
-    int fd() {return socketfd_;}
+    int fd() const  {return socketfd_;}
+    int fd()        {return socketfd_;}
 
     void setTcpNoDelay(bool on);
     void setReuseAddr(bool on);

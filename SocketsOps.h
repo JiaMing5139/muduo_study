@@ -23,6 +23,7 @@ namespace  sockets{
 
     void listenOrDie(int sockfd);
     int accept(int sockfd, struct sockaddr_in6* addr);
+    void shutdown(int,int);
 }
 
 

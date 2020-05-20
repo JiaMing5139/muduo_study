@@ -5,23 +5,27 @@
 #ifndef MUDUO_STUDY_TCPCONNECTION_H
 #define MUDUO_STUDY_TCPCONNECTION_H
 
-#include "base/CallBack.h"
 #include <memory>
+#include <atomic>
+#include "base/CallBack.h"
 #include "InetAddress.h"
 #include "base/noncopyable.h"
+#include "Buffer.h"
+#include "Socket.h"
 class Channel;
 class EventLoop;
 class TcpConnection: public std::enable_shared_from_this<TcpConnection>, public noncopyable  {
 public:
      enum status{
          kConnected,
-         closed
+         closed,
+         closing,
      };
 
     typedef std::shared_ptr<Channel> Channelptr;
     typedef std::shared_ptr<TcpConnection> TcpConnectionptr;
     explicit TcpConnection(EventLoop *, int fd);
-    int fd() const {return sockfd_;}
+    int fd() const {return sockfd_.fd();}
     void enableRead();
 
 
@@ -32,9 +36,13 @@ public:
     InetAddress localAddr() const { return localAddr_;}
     InetAddress peerAddr() const { return peerAddr_;}
     void cancel();
+
     void handReadEvent();
     void handleCloseEvent();
+    void handleWriteEvent();
 
+    void send(const std::string & msg);
+    void shutdown();
 
     void setOnMessageCallback(readTcpEventCallback cb){onMessage_ =cb;}
     void setOnConnectionCallback(TcpEventCallback cb){onConnection_ =cb;}
@@ -49,13 +57,20 @@ private:
     TcpEventCallback closeCallback;
     TcpEventCallback writeCompleteCallback;
 
-    status kStatus_ = closed;
+    std::atomic<status>  kStatus_ ;
 
     InetAddress peerAddr_;
     InetAddress localAddr_;
 
+
+    void sendInLoop(const std::string & msg);
+    void shutdownInLoop(const std::string & msg);
+    Buffer outputBuffer_;
+    Buffer inputBuffer_;
+
     Channelptr channel_;
-    const int sockfd_;
+    Socket sockfd_;
+    EventLoop * loop_;
 };
 
 

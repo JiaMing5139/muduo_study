@@ -5,11 +5,14 @@
 #ifndef MUDUO_STUDY_TCPSERVER_H
 #define MUDUO_STUDY_TCPSERVER_H
 
-#include "Acceptor.h"
-#include "InetAddress.h"
+
 #include <map>
+
 #include <vector>
 #include "base/CallBack.h"
+#include "TcpConnection.h"
+#include "Acceptor.h"
+#include "InetAddress.h"
 class EventLoop;
 class TcpServer {
 public:
@@ -42,6 +45,11 @@ private:
     InetAddress localaddr_;
 
 
+};
+
+class IgnoreSigPipe{
+public:
+    IgnoreSigPipe();
 };
 
 

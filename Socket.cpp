@@ -24,6 +24,7 @@ int Socket::accept(InetAddress *peerAddr) {
     struct sockaddr_in6 addr;
     bzero(&addr, sizeof addr);
     int connfd = sockets::accept(socketfd_, &addr);
+    struct  sockaddr_in * tmp = ( struct  sockaddr_in *)&addr;
     if (connfd >= 0)
     {
         peerAddr->setSockAddrInet6(addr);
@@ -72,7 +73,7 @@ void Socket::shutdownWrite() {
 
 }
 
-Socket::Socket() : socketfd_(sockets::createNonblockingOrDie(AF_INET)) {
+Socket::Socket() : socketfd_(sockets::createblockingOrDie(AF_INET)) {
 
 }
 

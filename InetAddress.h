@@ -31,7 +31,7 @@ public:
     { }
 
     void setSockAddrInet6(const struct sockaddr_in6& addr);
-
+    void setSockAddrInet4(const struct sockaddr_in &addr);
     struct sockaddr* getSockaddr();
 
 private:
@@ -40,6 +40,7 @@ private:
         struct sockaddr_in addr_;
         struct sockaddr_in6 addr6_;
     };
+    bool ipv6 = false;
     std::string ipstr_;
     uint16_t portstr_;
 

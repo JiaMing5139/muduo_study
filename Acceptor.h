@@ -21,6 +21,7 @@ public:
 
     explicit Acceptor(const InetAddress &,EventLoop * loop,NewConnectionCallback);
      Acceptor(const InetAddress &,EventLoop * loop);
+     ~Acceptor();
     void setNewConnectionCallback(NewConnectionCallback cb){newConnectionCallback=cb;}
     void listen();
 

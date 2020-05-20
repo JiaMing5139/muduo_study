@@ -67,6 +67,7 @@ int sockets::accept(int sockfd, struct sockaddr_in6* addr)
 
     int connfd = ::accept4(sockfd, sockaddr_cast(addr),
                            &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    struct sockaddr_in tmp= *(struct sockaddr_in*)addr;
 
     if (connfd < 0)
     {
@@ -113,5 +114,7 @@ struct sockaddr* sockets::sockaddr_cast(struct sockaddr_in* addr)
     return static_cast<struct sockaddr*>(implicit_cast<void*>(addr));
 }
 
+void sockets::shutdown(int fd,int how){
 
+}
 

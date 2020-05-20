@@ -5,6 +5,7 @@
 #include "Acceptor.h"
 
 #include <utility>
+#include <unistd.h>
 #include "SocketsOps.h"
 #include "Channel.h"
 #include "TcpConnection.h"
@@ -46,4 +47,8 @@ void Acceptor::listen() {
     listenfd_.listen();
     channel_->setReadCallBack(std::bind(&Acceptor::handleReadEvent,this));
     channel_->enableRead();
+}
+
+Acceptor::~Acceptor() {
+   close(listenfd_.fd());
 }

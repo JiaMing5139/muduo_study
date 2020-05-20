@@ -19,6 +19,9 @@ public:
     Channel(EventLoop* loop, int fd);
     ~Channel();
     void enableWrite(){events_ |= WriteEvent; update();}
+    void disableWriting(){events_ &= ~ WriteEvent;update();}
+    bool isWtriting(){return  events_& WriteEvent;}
+
     void enableRead() {events_ |= ReadEvent; update();}
 
 

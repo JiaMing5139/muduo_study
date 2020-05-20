@@ -17,6 +17,7 @@
 #include "Socket.h"
 #include "Acceptor.h"
 #include "TcpServer.h"
+#include "Buffer.h"
 
 
 
@@ -115,10 +116,14 @@ void testEventLoopThread(){
 /** Test Acceptor**/
 void testAccepotr(){
     loop= new EventLoop;
-    InetAddress addr(2337);
+    InetAddress addr(2333);
     Acceptor acceptor(addr,loop);
     acceptor.setNewConnectionCallback([](int fd,const InetAddress & addr){
         LOG_TRACE<<"new connection";
+        Buffer inputBuffer;
+        int savedErrno;
+        inputBuffer.readFd(fd,&savedErrno);
+        LOG_TRACE<<inputBuffer.retrieveAllAsString();
     });
     acceptor.listen();
     loop->loop();
@@ -128,9 +133,18 @@ void testAccepotr(){
 void testTcpserver(){
     loop= new EventLoop;
     InetAddress addr(2333);
+    std::cout << addr << std::endl;
     TcpServer tcpServer(addr,loop);
-    tcpServer.setOnMessageCallback([](const char* buff,TcpServer::TcpConnectionptr){
-        LOG_TRACE<<"onMessage: ReadConnectionacallback " << buff;
+    tcpServer.setOnMessageCallback([](Buffer * buff,TcpServer::TcpConnectionptr conn){
+        std::string msg =  buff->retrieveAllAsString();
+        LOG_TRACE << "content:" << msg;
+        std::thread t([conn,msg]() {
+            sleep(3);
+            LOG_TRACE <<"Tcp conn after read 0 " << conn.use_count();
+            conn->send(msg);
+        });
+        t.detach();
+
     });
     tcpServer.setOnConnectionCallback([](TcpServer::TcpConnectionptr){
         LOG_TRACE<<"onConnection:" <<"new Connection!";
@@ -139,6 +153,29 @@ void testTcpserver(){
     loop->loop();
 }
 
+/**test Buffer**/
+void testBuffer(){
+  Buffer buffer;
+  int savedErrno;
+  //input 6 chars
+  buffer.readFd(STDIN_FILENO,&savedErrno);
+  // test readfd
+  std::cout << buffer.debugInfo() << std::endl;
+  // test retrieveAllAsString
+  std::string s =buffer.retrieveAsString(4);
+  std::cout << "content:"<< s  << std::endl;
+  std::cout << buffer.debugInfo() << std::endl;
+    //input 4 chars for test  makeSpace
+  buffer.readFd(STDIN_FILENO,&savedErrno);
+  std::cout << buffer.debugInfo() << std::endl;
+  std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+    //input 4  chars for test resize the buffer
+    buffer.readFd(STDIN_FILENO,&savedErrno);
+    std::cout << buffer.debugInfo() << std::endl;
+    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+
+
+};
 
 int main() {
    // loggerTest();
@@ -146,7 +183,8 @@ int main() {
     //testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
-    //testAccepotr();
+    // testAccepotr();
     testTcpserver();
+    //testBuffer();
 
 }

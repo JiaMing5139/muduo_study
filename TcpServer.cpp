@@ -6,7 +6,10 @@
 #include "log/logger.h"
 #include "TcpConnection.h"
 #include <assert.h>
+#include <signal.h>
 #include "EventLoop.h"
+
+IgnoreSigPipe initObj;
 TcpServer::TcpServer(const InetAddress &addr,EventLoop *loop):
 acceptor_(addr,loop),
 loop_(loop),
@@ -42,3 +45,7 @@ void TcpServer::removeTcpConnection(const TcpServer::TcpConnectionptr &conn) {
     //TcpConnection dtor here
 }
 
+IgnoreSigPipe::IgnoreSigPipe() {
+    LOG_TRACE<<"Ignore SigPipe" ;
+    signal(SIGPIPE,SIG_IGN);
+}

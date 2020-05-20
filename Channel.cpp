@@ -53,6 +53,7 @@ void Channel::update() {
 }
 
 void Channel::removeself() {
+
     loop_->cancel(shared_from_this());
 
 }

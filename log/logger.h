@@ -22,6 +22,7 @@ namespace Jimmy {
         Logger& operator= (const Logger &) = delete;
         enum LogLevel
         {
+            CLOSEED,
             TRACE,
             DEBUG,
             INFO,
