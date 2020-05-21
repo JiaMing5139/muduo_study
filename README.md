@@ -52,13 +52,12 @@ Timer/TimerQueueBase
 ```
 
 ```
-
+#### TcpConnection 生命周期/状态转移
 #### 异步日志
 
-#### TcpConnection 生命周期
 
 # To do list
-- Buffer
-> Threadpoll of EventLoop
+- Threadpoll of EventLoop/one loop per thread
+- 流量控制
 - connector
 
