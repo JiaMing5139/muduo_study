@@ -9,6 +9,7 @@ Linux 多线程服务端编程
 
 #### 编译
 ```
+(Cmake Version >= 3.1.5)
 Cmake CMakeLists.text
 
 make
