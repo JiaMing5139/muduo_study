@@ -112,7 +112,7 @@ void Epoll::fillActiveChannels(int numEvents, Poller::Channelptrlist *actived) {
 
         Channelptr channel =  Poller::channels_[events_[index].data.fd];
         if(channel){
-            LOG_TRACE << "activdchannel fd found:" << channel->fd() << " activedEvent:" << events_[index].events;
+            LOG_TRACE << "activdchannel fd found:" << channel->fd() << "type of activedEvent:" << events_[index].events;
 
             channel->setRevents(events_[index].events);
             actived->push_back(channel);

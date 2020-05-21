@@ -115,6 +115,9 @@ struct sockaddr* sockets::sockaddr_cast(struct sockaddr_in* addr)
 }
 
 void sockets::shutdown(int fd,int how){
-
+    if (::shutdown(fd, SHUT_WR) < 0)
+    {
+        LOG_SYSFATAL << "sockets::shutdownWrite";
+    }
 }
 

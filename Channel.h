@@ -39,6 +39,9 @@ public:
     void setWriteCallBack(EventCallback cb){
         writeEventCallback = cb;
     }
+    void setCloseCallBack(EventCallback cb){
+        closeCallback = cb;
+    }
     void setErrorCallBack(EventCallback cb){
         errorCallBack = cb;
     }

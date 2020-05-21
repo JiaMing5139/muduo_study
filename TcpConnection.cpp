@@ -26,17 +26,18 @@ loop_(loop)
 
 void TcpConnection::enableRead() {
     assert(kStatus_ == closed);
-
+    kStatus_ = kConnected;
 //    channel_->setWriteCallBack(bind(&TcpConnection::handleWriteEvent,shared_from_this()));
 //    channel_->setReadCallBack(bind(&TcpConnection::handReadEvent,shared_from_this()));
     channel_->setWriteCallBack(bind(&TcpConnection::handleWriteEvent,this));
     channel_->setReadCallBack(bind(&TcpConnection::handReadEvent,this));
+    channel_->setCloseCallBack(bind(&TcpConnection::handleCloseEvent,this));
     LOG_TRACE << "refcount of channel in enable read 1:" << this->channel_.use_count();
     channel_->enableRead();//refcount of channel =  2 channelMap +1
     LOG_TRACE << "refcount of channel in enable read 2:" << this->channel_.use_count();
     assert(onConnection_);
     onConnection_(shared_from_this());
-    kStatus_ = kConnected;
+
 }
 
 void TcpConnection::cancel() {
@@ -48,7 +49,7 @@ void TcpConnection::cancel() {
 void TcpConnection::handReadEvent() {
     //refcount of channel =  4  | one is in channelMap of Poll, and another is in activedChannels;
     assert(onMessage_);
-
+    if(kStatus_ != closed){
         int savedErrno;
         int n = inputBuffer_.readFd(sockfd_.fd(),&savedErrno);
         if(n == 0){
@@ -62,11 +63,12 @@ void TcpConnection::handReadEvent() {
                      <<localAddr();
             onMessage_(&inputBuffer_,shared_from_this());
         }
+    }
 
 }
 
 void TcpConnection::handleCloseEvent() {
-    if(kStatus_ == kConnected) {
+    if(kStatus_ == kConnected || kStatus_ == closing) {
         LOG_TRACE << "Tcpserver: disconnected ";
         LOG_TRACE << "refcount of channel before removeself:" << this->channel_.use_count();
         kStatus_ = closed;
@@ -92,9 +94,7 @@ void TcpConnection::send(const std::string &msg) {
     loop_->runInLoop(bind(&TcpConnection::sendInLoop,shared_from_this(),msg));
 }
 
-void TcpConnection::shutdown() {
 
-}
 
 void TcpConnection::sendInLoop(const std::string &msg) {
        LOG_TRACE << "start to sendInloop";
@@ -102,17 +102,18 @@ void TcpConnection::sendInLoop(const std::string &msg) {
         ssize_t nwrite;
         if(outputBuffer_.readableBytes() == 0 && !channel_->isWtriting()){
             nwrite = write(sockfd_.fd(),msg.c_str(),msg.length());
-            LOG_TRACE << localAddr_ <<"->"<<peerAddr_<<" len:"<< nwrite <<" content" <<msg;
+            LOG_TRACE << localAddr_ <<"->"<<peerAddr_<<" len:"<< nwrite <<" content:" <<msg;
             if(nwrite >= 0){
 
                 if(nwrite < msg.length()){
                     LOG_TRACE << "write blocked waiting for writeable" <<"total:" <<msg.length() <<" writed:"<<nwrite;
                     outputBuffer_.append(msg.c_str() + nwrite,msg.length() - nwrite);
+                    LOG_TRACE << "outpubuffer size:"<< outputBuffer_.readableBytes();
                     channel_->enableWrite();
                 }
 
             }else{
-                if(errno != EAGAIN){
+                if(errno != EAGAIN && errno != 32){
                     LOG_SYSFATAL <<"write";
                 }
             }
@@ -124,11 +125,13 @@ void TcpConnection::sendInLoop(const std::string &msg) {
 }
 
 void TcpConnection::handleWriteEvent() {
-        LOG_TRACE<<"handleWriteEvent";
+        LOG_TRACE<<"handleWriteEvent<< current status: " << kStatus_;
         if(kStatus_ == closing){
             if(outputBuffer_.readableBytes() == 0 ){
                 assert(channel_->isWtriting());
                 channel_->disableWriting();
+                shutdownInLoop();
+
             }else{
                 std::string msg =  outputBuffer_.retrieveAllAsString();
                 int nwrite = write(sockfd_.fd(),msg.c_str(),msg.length());
@@ -136,12 +139,12 @@ void TcpConnection::handleWriteEvent() {
                     if (nwrite < msg.length()) {
                         LOG_TRACE << "write blocked" << std::endl;
                         outputBuffer_.append(msg.c_str() + nwrite, msg.length() - nwrite);
+                        LOG_TRACE << "outpubuffer size:"<< outputBuffer_.readableBytes();
                         assert(channel_->isWtriting());
                     }else{
                         assert(channel_->isWtriting());
                         channel_->disableWriting();
-                        //shutdowninloop();
-                        kStatus_ = closed;
+                        shutdownInLoop();
                     }
                 } else{
                     if(errno != EAGAIN){
@@ -154,6 +157,7 @@ void TcpConnection::handleWriteEvent() {
 
         if(kStatus_ == kConnected){
             if(outputBuffer_.readableBytes() == 0 ){
+                LOG_TRACE << "send over1";
                 assert(channel_->isWtriting());
                 channel_->disableWriting();
             }else{
@@ -163,9 +167,10 @@ void TcpConnection::handleWriteEvent() {
                     if (nwrite < msg.length()) {
                         LOG_TRACE << "write blocked waiting for writeable" <<"total:" <<msg.length() <<" writed:"<<nwrite;
                         outputBuffer_.append(msg.c_str() + nwrite, msg.length() - nwrite);
+                        LOG_TRACE << "outpubuffer size:"<< outputBuffer_.readableBytes();
                         assert(channel_->isWtriting());
                     }else{
-                        LOG_TRACE << "send over";
+                        LOG_TRACE << "send over2";
                         assert(channel_->isWtriting());
                         channel_->disableWriting();
                     }
@@ -178,7 +183,23 @@ void TcpConnection::handleWriteEvent() {
 
         }
 
-        channel_->disableWriting();
+
+}
+void TcpConnection::shutdown() {
+    if(kStatus_ == kConnected){
+        kStatus_ = closing;
+        loop_->runInLoop(bind(&TcpConnection::shutdownInLoop,shared_from_this()));
+    }
+}
+
+void TcpConnection::shutdownInLoop() {
+
+    loop_->assertInLoopThread();
+    if (!channel_->isWtriting())
+    {
+        LOG_TRACE << "try to shutdown";
+        sockfd_.shutdownWrite();
+    }
 }
 
 

@@ -64,7 +64,7 @@ private:
 
 
     void sendInLoop(const std::string & msg);
-    void shutdownInLoop(const std::string & msg);
+    void shutdownInLoop();
     Buffer outputBuffer_;
     Buffer inputBuffer_;
 

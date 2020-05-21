@@ -11,7 +11,7 @@ class Socket {
 public:
     Socket();
     explicit Socket(int fd);
-
+    ~Socket();
     void bindAddress(InetAddress addr);
     void listen();
     void connect();

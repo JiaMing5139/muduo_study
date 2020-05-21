@@ -130,6 +130,33 @@ void testAccepotr(){
 }
 
 /** Test Tcpserver**/
+std::string readFile(const char* filename)
+{
+    std::string content;
+    FILE* fp = ::fopen(filename, "rb");
+    if (fp)
+    {
+        // inefficient!!!
+        const int kBufSize = 1024*1024;
+        char iobuf[kBufSize];
+        ::setbuffer(fp, iobuf, sizeof iobuf);
+
+        char buf[kBufSize];
+        size_t nread = 0;
+        while ( (nread = ::fread(buf, 1, sizeof buf, fp)) > 0)
+        {
+            content.append(buf, nread);
+        }
+        ::fclose(fp);
+    }
+    LOG_TRACE <<content.length();
+    return content;
+}
+void downloadTest(TcpServer::TcpConnectionptr conn){
+    std::string msg = readFile("testfile");
+    conn->send(msg);
+    conn->shutdown();
+}
 void testTcpserver(){
     loop= new EventLoop;
     InetAddress addr(2333);
@@ -139,17 +166,14 @@ void testTcpserver(){
         std::string msg =  buff->retrieveAllAsString();
         LOG_TRACE << "content:" << msg;
         std::thread t([conn,msg]() {
-            sleep(3);
+            //sleep(3);
             LOG_TRACE <<"Tcp conn after read 0 " << conn.use_count();
             conn->send(msg);
         });
         t.detach();
 
     });
-    tcpServer.setOnConnectionCallback([](TcpServer::TcpConnectionptr){
-        LOG_TRACE<<"onConnection:" <<"new Connection!";
-
-    });
+    tcpServer.setOnConnectionCallback(downloadTest);
     loop->loop();
 }
 
@@ -184,7 +208,9 @@ int main() {
     //testRunInLoop();
    // testEventLoopThread();
     // testAccepotr();
-    testTcpserver();
+     testTcpserver();
     //testBuffer();
+
+//   std:: cout <<readFile("test") <<std::endl;
 
 }

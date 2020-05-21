@@ -47,10 +47,7 @@ private:
 
 };
 
-class IgnoreSigPipe{
-public:
-    IgnoreSigPipe();
-};
+
 
 
 #endif //MUDUO_STUDY_TCPSERVER_H

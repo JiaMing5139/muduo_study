@@ -8,6 +8,7 @@
 #include "log/logger.h"
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <unistd.h>
 void Socket::bindAddress(InetAddress addr) {
     sockets::bindOrDie(socketfd_,addr.getSockaddr());
 }
@@ -70,7 +71,7 @@ void Socket::setKeepAlive(bool on) {
 }
 
 void Socket::shutdownWrite() {
-
+    sockets::shutdown(socketfd_,SHUT_WR);
 }
 
 Socket::Socket() : socketfd_(sockets::createblockingOrDie(AF_INET)) {
@@ -79,5 +80,9 @@ Socket::Socket() : socketfd_(sockets::createblockingOrDie(AF_INET)) {
 
 Socket::Socket(int fd) : socketfd_(fd) {
 
+}
+
+Socket::~Socket() {
+    close(this->socketfd_);
 }
 

@@ -23,8 +23,9 @@ events_(0) {
 }
 
 void Channel::handleEvent() {
-    if(revents_ & POLLHUP){
-        LOG_TRACE<<"EVENT POLLUP:" <<" disconnected!";
+    if(revents_ & POLLHUP ){
+        assert(closeCallback);
+        closeCallback();
     }
 
     if(revents_&POLLNVAL){
@@ -59,8 +60,5 @@ void Channel::removeself() {
 }
 
 Channel::~Channel() {
-   int ret =  close(fd_);
-   if(ret == -1)
-   LOG_SYSFATAL << " ~Channel close fd" ;
 
 }
