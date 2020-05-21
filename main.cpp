@@ -18,6 +18,8 @@
 #include "Acceptor.h"
 #include "TcpServer.h"
 #include "Buffer.h"
+#include "httpForTest/httpRequest.h"
+#include "httpForTest/Response.h"
 
 
 
@@ -129,14 +131,13 @@ void testAccepotr(){
     loop->loop();
 }
 
-/** Test Tcpserver**/
+/** Test downLoadServer**/
 std::string readFile(const char* filename)
 {
     std::string content;
     FILE* fp = ::fopen(filename, "rb");
     if (fp)
     {
-        // inefficient!!!
         const int kBufSize = 1024*1024;
         char iobuf[kBufSize];
         ::setbuffer(fp, iobuf, sizeof iobuf);
@@ -157,7 +158,7 @@ void downloadTest(TcpServer::TcpConnectionptr conn){
     conn->send(msg);
     conn->shutdown();
 }
-void testTcpserver(){
+void testDownloadserver(){
     loop= new EventLoop;
     InetAddress addr(2333);
     std::cout << addr << std::endl;
@@ -201,6 +202,36 @@ void testBuffer(){
 
 };
 
+/**single thread Httpserver**/
+
+void testHttpServer(){
+    loop= new EventLoop;
+    InetAddress addr(2333);
+    std::cout << addr << std::endl;
+    TcpServer tcpServer(addr,loop);
+    tcpServer.setOnMessageCallback([](Buffer * buf,TcpServer::TcpConnectionptr conn){
+        httpRequest request ;
+        string msg(buf->retrieveAllAsString());
+        request.parseContext(msg);
+
+        if(request.ifFinish()){
+                Response r;
+                string res =  "test";
+                r.setStatusCode(Response::k200Ok);
+                r.setBody(res);
+                Buffer buf;
+                r.appendToBuff(&buf);
+                conn->send(&buf);
+                conn->shutdown();
+            }
+
+    });
+    tcpServer.setOnConnectionCallback([](TcpServer::TcpConnectionptr conn){
+
+    });
+    loop->loop();
+}
+
 int main() {
    // loggerTest();
     //testEventLoop();
@@ -208,8 +239,9 @@ int main() {
     //testRunInLoop();
    // testEventLoopThread();
     // testAccepotr();
-     testTcpserver();
+    // testDownloadserver();
     //testBuffer();
+    testHttpServer();
 
 //   std:: cout <<readFile("test") <<std::endl;
 

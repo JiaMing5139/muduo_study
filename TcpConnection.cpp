@@ -91,9 +91,17 @@ void TcpConnection::handleCloseEvent() {
 }
 
 void TcpConnection::send(const std::string &msg) {
-    loop_->runInLoop(bind(&TcpConnection::sendInLoop,shared_from_this(),msg));
+    if(kStatus_ == kConnected){
+        loop_->runInLoop(bind(&TcpConnection::sendInLoop,shared_from_this(),msg));
+    }
+
 }
 
+void TcpConnection::send(Buffer *buffer) {
+    if (kStatus_ == kConnected) {
+        loop_->runInLoop(bind(&TcpConnection::sendInLoop, shared_from_this(), buffer->retrieveAllAsString()));
+    }
+}
 
 
 void TcpConnection::sendInLoop(const std::string &msg) {
@@ -201,6 +209,9 @@ void TcpConnection::shutdownInLoop() {
         sockfd_.shutdownWrite();
     }
 }
+
+
+
 
 
 

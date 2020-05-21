@@ -76,6 +76,11 @@ public:
         std::copy(data, data + len , &buffer_[writerIndex_]);
         writerIndex_ += len;
     }
+    void append(std::string msg){
+        ensureSpace(msg.length());
+        std::copy(msg.c_str(), msg.c_str() + msg.length()  , &buffer_[writerIndex_]);
+        writerIndex_ += msg.length() ;
+    }
     void ensureSpace(int len){
 
         if( len < writableBytes() ){

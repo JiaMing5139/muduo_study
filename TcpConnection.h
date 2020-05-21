@@ -42,6 +42,7 @@ public:
     void handleWriteEvent();
 
     void send(const std::string & msg);
+    void send(Buffer * buffer);
     void shutdown();
 
     void setOnMessageCallback(readTcpEventCallback cb){onMessage_ =cb;}

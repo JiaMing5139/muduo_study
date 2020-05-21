@@ -34,8 +34,19 @@ add_executable(muduo_study
         SocketsOps.cpp
         SocketsOps.h
         Socket.cpp
-        Socket.h InetAddress.cpp InetAddress.h base/Copyable.h Acceptor.cpp Acceptor.h
-        TcpConnection.cpp TcpConnection.h TcpServer.cpp TcpServer.h Buffer.cpp Buffer.h)
+        Socket.h
+        InetAddress.cpp
+        InetAddress.h
+        base/Copyable.h
+        Acceptor.cpp
+        Acceptor.h
+        TcpConnection.cpp
+        TcpConnection.h
+        TcpServer.cpp TcpServer.h
+        Buffer.cpp
+        Buffer.h
+        httpForTest/httpRequest.cpp
+        httpForTest/Response.cpp)
 find_package (Threads REQUIRED)
 
 target_link_libraries(muduo_study

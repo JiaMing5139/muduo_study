@@ -11,7 +11,7 @@
 namespace Jimmy {
 Logger::LogLevel initLogLevel(){
     //fixme from a config or env
-    return Logger::DEBUG;
+    return Logger::CLOSEED;
 }
 __thread char t_errnobuf[512];
 
