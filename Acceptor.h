@@ -9,11 +9,12 @@
 #include "InetAddress.h"
 #include <memory>
 #include "Socket.h"
+#include "base/noncopyable.h"
 class Channel;
 class EventLoop;
 class TcpConnection;
 
-class Acceptor {
+class Acceptor: public noncopyable {
 public:
     typedef std::shared_ptr<Channel> Channelptr;
     typedef std::shared_ptr<TcpConnection> TcpConnectionptr;

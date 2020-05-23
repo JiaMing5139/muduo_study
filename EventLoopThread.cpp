@@ -3,7 +3,7 @@
 //
 
 #include "EventLoopThread.h"
-
+#include "log/logger.h"
 
 
 EventLoop * EventLoopThread::startLoop() {
@@ -33,7 +33,6 @@ EventLoop * EventLoopThread::startLoop() {
 
          running_ = true;
          return loop_;
-
      }
 }
 
@@ -44,10 +43,10 @@ loop_(nullptr)
 
 }
 EventLoopThread::~EventLoopThread(){
-
+    LOG_TRACE <<"~EventLoopThread id:";
     running_=false;
         if(loop_){
-            loop_->quit();
+           // loop_->quit();
             thread_.join();
         }
 

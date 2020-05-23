@@ -20,14 +20,15 @@ public:
          kConnected,
          closed,
          closing,
+         overed,
      };
 
     typedef std::shared_ptr<Channel> Channelptr;
     typedef std::shared_ptr<TcpConnection> TcpConnectionptr;
     explicit TcpConnection(EventLoop *, int fd);
     int fd() const {return sockfd_.fd();}
-    void enableRead();
-
+    void buildConnection(EventLoop *);
+    ~TcpConnection();
 
     void setInetAddress(const InetAddress &peerAddr,const InetAddress &localAddr){
         peerAddr_ = peerAddr;
@@ -52,6 +53,7 @@ public:
 
 
 private:
+    void destoryChannel();
     readTcpEventCallback onMessage_;
 
     TcpEventCallback onConnection_;
@@ -62,6 +64,7 @@ private:
 
     InetAddress peerAddr_;
     InetAddress localAddr_;
+
 
 
     void sendInLoop(const std::string & msg);

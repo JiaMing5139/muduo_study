@@ -11,7 +11,7 @@
 namespace Jimmy {
 Logger::LogLevel initLogLevel(){
     //fixme from a config or env
-    return Logger::CLOSEED;
+    return Logger::TRACE;
 }
 __thread char t_errnobuf[512];
 
@@ -34,7 +34,7 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
         time_t seconds = ::time(nullptr);
         auto locoaltimeStruct = localtime(&seconds);
         std::string time_s(asctime(locoaltimeStruct));
-        time_s.pop_back();
+       // time_s.pop_back();
         std:: string log_type;
         switch (level){
             case TRACE: log_type = "TRACE";

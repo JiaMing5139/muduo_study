@@ -30,6 +30,7 @@ public:
 
 private:
    const  int socketfd_;
+   bool alive_ = true;
 
 };
 

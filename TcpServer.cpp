@@ -24,17 +24,20 @@ namespace {
 
     IgnoreSigPipe initObj;
 }
-TcpServer::TcpServer(const InetAddress &addr,EventLoop *loop):
+TcpServer::TcpServer(const InetAddress &addr,EventLoop * loop):
 acceptor_(addr,loop),
 loop_(loop),
-localaddr_(addr)
+localaddr_(addr),
+eventLoopThreadPool_(loop,3)
 {
-    acceptor_.setNewConnectionCallback(bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
-    acceptor_.listen();
+     acceptor_.setNewConnectionCallback(bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
+     loop->runInLoop(std::bind(&Acceptor::listen,&acceptor_));
+     eventLoopThreadPool_.start();
 }
 
 void TcpServer::newConnectionCallback( int fd, const InetAddress & peerAddress) {
-    TcpConnectionptr tcpConnectionptr(new TcpConnection(loop_,fd),[](TcpConnection * conn){
+    EventLoop * subloop = eventLoopThreadPool_.getLoop();
+    TcpConnectionptr tcpConnectionptr(new TcpConnection(subloop,fd),[](TcpConnection * conn){
         LOG_TRACE<< "Deleter of Tcpconnection";
         delete conn;
     });
@@ -45,18 +48,26 @@ void TcpServer::newConnectionCallback( int fd, const InetAddress & peerAddress) 
     tcpConnectionptr->setOnMessageCallback(onMessage_);
     tcpConnectionptr->setOnConnectionCallback(onConnection_);
     tcpConnectionptr->setOnClosedCallback(bind(&TcpServer::removeTcpConnection,this,std::placeholders::_1));
-    tcpConnectionptr->enableRead();
+    tcpConnectionptr->buildConnection(subloop);
     tcpConnectionMap_[fd] = std::move(tcpConnectionptr);
-    LOG_TRACE<<"refcout of connection" <<tcpConnectionMap_[fd].use_count();
+ //   LOG_TRACE<<"refcout of connection" <<tcpConnectionMap_[fd].use_count();
 
 }
 
 void TcpServer::removeTcpConnection(const TcpServer::TcpConnectionptr &conn) {
+    loop_->runInLoop(std::bind(&TcpServer::removeInLoop,this,conn));
+    //TcpConnection dtor here
+}
+
+void TcpServer::removeInLoop(const TcpConnectionptr & conn) {
     loop_->assertInLoopThread();
+
+
     LOG_TRACE <<"try to remove TcpConnection from TcpServer current :refcount of conn is " << conn.use_count();
     int ret = tcpConnectionMap_.erase(conn->fd());
+
     assert(ret != 0);
-    //TcpConnection dtor here
+
 }
 
 

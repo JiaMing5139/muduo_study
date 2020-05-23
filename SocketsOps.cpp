@@ -57,7 +57,7 @@ void sockets::listenOrDie(int sockfd)
     int ret = ::listen(sockfd, SOMAXCONN);
     if (ret < 0)
     {
-        LOG_SYSFATAL << "sockets::listenOrDie";
+        LOG_SYSFATAL << "sockets::listenOrDie fd:" <<sockfd;
     }
 }
 

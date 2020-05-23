@@ -20,12 +20,12 @@
 #include "Buffer.h"
 #include "httpForTest/httpRequest.h"
 #include "httpForTest/Response.h"
-
+#include "LoopThreadPool.h"
 
 
 /**  Test Asynlog  **/
 
-std::unique_ptr<AsyncLogging> asyn(new AsyncLogging("timerqueue"));
+std::unique_ptr<AsyncLogging> asyn(new AsyncLogging("fuck"));
 void g_output(const char * msg,size_t len){
     asyn->append(msg,len);
 }
@@ -37,7 +37,13 @@ void setAsynLog(){
 
 void loggerTest() {
     setAsynLog();
-    LOG_TRACE << "testLog";
+
+    int i = 0;
+    while(i < 100){
+        LOG_TRACE << "testLogaa";
+        i++;
+    }
+
 }
 
 
@@ -54,7 +60,7 @@ void testEventLoop(){
     struct itimerspec howlong;
     bzero(&howlong,sizeof howlong);
     howlong.it_value.tv_sec = 2;
-    timerfd_settime(timerfd,0,&howlong,NULL);
+    timerfd_settime(timerfd,0,&howlong,nullptr);
     std::shared_ptr<Channel> channelptr (new Channel(loop,timerfd));
     channelptr->setReadCallBack(std::bind(timeout, timerfd));
     channelptr->enableRead();
@@ -131,7 +137,31 @@ void testAccepotr(){
     loop->loop();
 }
 
-/** Test downLoadServer**/
+/**test Buffer**/
+void testBuffer(){
+    Buffer buffer;
+    int savedErrno;
+    //input 6 chars
+    buffer.readFd(STDIN_FILENO,&savedErrno);
+    // test readfd
+    std::cout << buffer.debugInfo() << std::endl;
+    // test retrieveAllAsString
+    std::string s =buffer.retrieveAsString(4);
+    std::cout << "content:"<< s  << std::endl;
+    std::cout << buffer.debugInfo() << std::endl;
+    //input 4 chars for test  makeSpace
+    buffer.readFd(STDIN_FILENO,&savedErrno);
+    std::cout << buffer.debugInfo() << std::endl;
+    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+    //input 4  chars for test resize the buffer
+    buffer.readFd(STDIN_FILENO,&savedErrno);
+    std::cout << buffer.debugInfo() << std::endl;
+    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+
+
+}
+
+/** Test downLoadServer 测试大文件发送**/
 std::string readFile(const char* filename)
 {
     std::string content;
@@ -177,34 +207,46 @@ void testDownloadserver(){
     tcpServer.setOnConnectionCallback(downloadTest);
     loop->loop();
 }
+/**test upload Server 测试大文件接收 **/
+void testUploadServer(){
+    loop= new EventLoop;
+    InetAddress addr(2333);
+    std::cout << addr << std::endl;
+    TcpServer tcpServer(addr,loop);
+    tcpServer.setOnMessageCallback([](Buffer * buff,TcpServer::TcpConnectionptr conn){
+        FILE * file = fopen("uploadFile","wb");
+        if(!file){
+            LOG_SYSFATAL<<"fopen";
+        }
+        string msg = buff->retrieveAllAsString();
+        int nread = fwrite(msg.c_str(),1,msg.length(),file);
 
-/**test Buffer**/
-void testBuffer(){
-  Buffer buffer;
-  int savedErrno;
-  //input 6 chars
-  buffer.readFd(STDIN_FILENO,&savedErrno);
-  // test readfd
-  std::cout << buffer.debugInfo() << std::endl;
-  // test retrieveAllAsString
-  std::string s =buffer.retrieveAsString(4);
-  std::cout << "content:"<< s  << std::endl;
-  std::cout << buffer.debugInfo() << std::endl;
-    //input 4 chars for test  makeSpace
-  buffer.readFd(STDIN_FILENO,&savedErrno);
-  std::cout << buffer.debugInfo() << std::endl;
-  std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
-    //input 4  chars for test resize the buffer
-    buffer.readFd(STDIN_FILENO,&savedErrno);
-    std::cout << buffer.debugInfo() << std::endl;
-    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+    });
+    tcpServer.setOnConnectionCallback(downloadTest);
+    loop->loop();
+}
 
+/** test echo server**/
 
-};
+void testEchoserver(){
+   loop= new EventLoop;
+
+    InetAddress addr(2333);
+    std::cout << addr << std::endl;
+    TcpServer tcpServer(addr,loop);
+    tcpServer.setOnMessageCallback([](Buffer * buf,TcpServer::TcpConnectionptr conn){
+        conn->send(buf->retrieveAllAsString());
+    });
+    tcpServer.setOnConnectionCallback([](TcpServer::TcpConnectionptr conn){
+
+    });
+   loop->loop();
+}
 
 /**single thread Httpserver**/
 
 void testHttpServer(){
+
     loop= new EventLoop;
     InetAddress addr(2333);
     std::cout << addr << std::endl;
@@ -232,17 +274,39 @@ void testHttpServer(){
     loop->loop();
 }
 
+/**EventThreaddPool**/
+
+void testEventThreaddPool() {
+     loop= new EventLoop;
+     LoopThreadPool pool(loop,1);
+     pool.start();
+     EventLoop * evpool = pool.getLoop();
+     InetAddress addr(2333);
+    std::cout << addr << std::endl;
+    TcpServer tcpServer(addr,evpool);
+    tcpServer.setOnMessageCallback([](Buffer * buf,TcpServer::TcpConnectionptr conn){
+        conn->send(buf->retrieveAllAsString());
+    });
+    tcpServer.setOnConnectionCallback([](TcpServer::TcpConnectionptr conn){
+
+    });
+    loop->loop();
+
+}
+
 int main() {
-   // loggerTest();
+    // setAsynLog();
+    //loggerTest();
     //testEventLoop();
     //testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
     // testAccepotr();
-    // testDownloadserver();
+     //testDownloadserver();
     //testBuffer();
     testHttpServer();
-
+   // testEchoserver();
+    // testEventThreaddPool();
 //   std:: cout <<readFile("test") <<std::endl;
 
 }

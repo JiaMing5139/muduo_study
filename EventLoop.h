@@ -36,7 +36,7 @@ public:
     void runEvery(double interval, TimerCallback cb);
 
 
-    void runInLoop(funcCallback cb);
+    void runInLoop( funcCallback  cb);
 
 private:
     bool runInthread();
@@ -51,7 +51,7 @@ private:
     std::atomic<bool> quit_;
 
 
-    void queueInloop(funcCallback);
+    void queueInloop(funcCallback );
     void wakeup();
     void doPendingFunctors();
     std::atomic<bool> doingFunctors;

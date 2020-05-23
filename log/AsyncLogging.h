@@ -46,7 +46,7 @@ private:
     std::condition_variable cond_;
     Bufferptr currentBuffer_;
     Bufferptr nextBuffer_;
-    std::unique_ptr<Buffers> buffersptr_;
+    Buffers buffersptr_;
 
 };
 

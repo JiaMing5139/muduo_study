@@ -73,11 +73,12 @@ void EventLoop::loop() {
 }
 
 void EventLoop::abortInthread() {
-    LOG_TRACE << "Not running in IO thread";
+    LOG_TRACE << "Not running in IO thread  this loop created in: " << threadId_;
     abort();
 }
 
 void EventLoop::update(EventLoop::Channelptr channel) {
+    assertInLoopThread();
     assert(channel->fd() >= 0);
     poll_->updateChannel(channel);
 }
@@ -85,6 +86,8 @@ void EventLoop::update(EventLoop::Channelptr channel) {
 void EventLoop::cancel(EventLoop::Channelptr channel) {
     assertInLoopThread();
     poll_->removeChannel(channel);
+
+
 }
 
 EventLoop::~EventLoop() {
@@ -113,15 +116,14 @@ void EventLoop::runEvery(double interval, TimerCallback cb) {
     timerQueue.addTimer(timestamp,cb,interval);
 }
 
-void EventLoop::runInLoop(funcCallback cb) {
+void EventLoop::runInLoop( funcCallback cb) {
+    LOG_TRACE << "runInLoop threadId:" ;
     if(runInthread()){
         LOG_TRACE << "runInLoop was already in current loop" ;
         cb();
     }else{
-        queueInloop(std::move(cb));
+        queueInloop(cb);
     }
-
-
 }
 
 //被runinloop调用，只会在非loop线程中被调用
@@ -143,9 +145,7 @@ void EventLoop::queueInloop(funcCallback cb) {
         wakeup();
         doingFunctors = true; //protected by atomic
     }
-
-
-
+   LOG_TRACE << " queueInloop last line" ;
 }
 
 
@@ -172,6 +172,7 @@ void EventLoop::doPendingFunctors() {
 }
 
 void EventLoop::wakeup() {
+    LOG_TRACE<< "try to wakeup evenloop in :" << threadId_ ;
     int ret =  eventfd_write(wakeUpfd_,1);
     if (ret == -1){
         perror("eventfd_write");

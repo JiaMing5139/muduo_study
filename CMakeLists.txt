@@ -46,7 +46,7 @@ add_executable(muduo_study
         Buffer.cpp
         Buffer.h
         httpForTest/httpRequest.cpp
-        httpForTest/Response.cpp)
+        httpForTest/Response.cpp LoopThreadPool.cpp LoopThreadPool.h)
 find_package (Threads REQUIRED)
 
 target_link_libraries(muduo_study

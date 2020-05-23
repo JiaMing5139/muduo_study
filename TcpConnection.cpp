@@ -9,6 +9,10 @@
 #include <unistd.h>
 #include <assert.h>
 
+void defaultCompleteCallback(TcpConnectionPtr ptr){
+    LOG_TRACE <<"defaultCompleteCallback";
+}
+
 TcpConnection::TcpConnection(EventLoop *loop,int fd):
 sockfd_(fd),
 channel_(new Channel(loop,fd),[](Channel * chanptr)
@@ -20,11 +24,11 @@ kStatus_(closed),
 loop_(loop)
 {  // refcount of channel =  1
 //    channel_->enableWrite();
-
-    LOG_TRACE << "refcount of channel in ctor of TcpConnection:" << this->channel_.use_count();
+    sockfd_.setTcpNoDelay(true);
+    writeCompleteCallback  = defaultCompleteCallback;
 }
 
-void TcpConnection::enableRead() {
+void TcpConnection::buildConnection(EventLoop * ioloop) {
     assert(kStatus_ == closed);
     kStatus_ = kConnected;
 //    channel_->setWriteCallBack(bind(&TcpConnection::handleWriteEvent,shared_from_this()));
@@ -33,11 +37,11 @@ void TcpConnection::enableRead() {
     channel_->setReadCallBack(bind(&TcpConnection::handReadEvent,this));
     channel_->setCloseCallBack(bind(&TcpConnection::handleCloseEvent,this));
     LOG_TRACE << "refcount of channel in enable read 1:" << this->channel_.use_count();
-    channel_->enableRead();//refcount of channel =  2 channelMap +1
+  //  channel_->enableRead();//refcount of channel =  2 channelMap +1
+    ioloop->runInLoop(std::bind(&Channel::enableRead,channel_));
     LOG_TRACE << "refcount of channel in enable read 2:" << this->channel_.use_count();
     assert(onConnection_);
     onConnection_(shared_from_this());
-
 }
 
 void TcpConnection::cancel() {
@@ -48,8 +52,9 @@ void TcpConnection::cancel() {
 
 void TcpConnection::handReadEvent() {
     //refcount of channel =  4  | one is in channelMap of Poll, and another is in activedChannels;
-    assert(onMessage_);
+
     if(kStatus_ != closed){
+        assert(onMessage_);
         int savedErrno;
         int n = inputBuffer_.readFd(sockfd_.fd(),&savedErrno);
         if(n == 0){
@@ -59,7 +64,7 @@ void TcpConnection::handReadEvent() {
             if (savedErrno != 11)
                 LOG_SYSFATAL <<" readv";
         }else{
-            LOG_TRACE<<"Tcpserver: NewConnectionacallback:" <<peerAddr()<<"->"
+            LOG_TRACE<<"Tcpserver: newReadEvent:" <<peerAddr()<<"->"
                      <<localAddr();
             onMessage_(&inputBuffer_,shared_from_this());
         }
@@ -68,16 +73,18 @@ void TcpConnection::handReadEvent() {
 }
 
 void TcpConnection::handleCloseEvent() {
+    loop_->assertInLoopThread();
     if(kStatus_ == kConnected || kStatus_ == closing) {
         LOG_TRACE << "Tcpserver: disconnected ";
         LOG_TRACE << "refcount of channel before removeself:" << this->channel_.use_count();
         kStatus_ = closed;
 
         //remove channel in Eventloop
-        this->channel_->removeself();//fixme not thread safe
-        LOG_TRACE << "refcount of connection before closecallback  fd: " << sockfd_.fd() << "t his addr " << this;
-        LOG_TRACE << "addr of shared_from_this before closecallback  " << shared_from_this();
-        LOG_TRACE << "fd of connection before closecallback from shared_from_this " << shared_from_this()->sockfd_.fd();
+        channel_->disableAll();
+        channel_->removeself();//fixme not thread safe
+//        LOG_TRACE << "refcount of connection before closecallback  fd: " << sockfd_.fd() << "t his addr " << this;
+//        LOG_TRACE << "addr of shared_from_this before closecallback  " << shared_from_this();
+//        LOG_TRACE << "fd of connection before closecallback from shared_from_this " << shared_from_this()->sockfd_.fd();
         closeCallback(shared_from_this()); //remove connnection in Tcpserver
         //closecallback中 调用map.eraser TcpConnection 引用计数 - 1 ，仅剩shared_from_this维持的引用计数，函数接受后，参数释放引用计数清零，TcpConnection释放
         // 后面不能再操作，coredump +未定义操作
@@ -105,8 +112,9 @@ void TcpConnection::send(Buffer *buffer) {
 
 
 void TcpConnection::sendInLoop(const std::string &msg) {
+     loop_->assertInLoopThread();
        LOG_TRACE << "start to sendInloop";
-    LOG_TRACE << "start to sendInloop:" << shared_from_this().use_count();
+      LOG_TRACE << "start to sendInloop:" << shared_from_this().use_count();
         ssize_t nwrite;
         if(outputBuffer_.readableBytes() == 0 && !channel_->isWtriting()){
             nwrite = write(sockfd_.fd(),msg.c_str(),msg.length());
@@ -118,6 +126,8 @@ void TcpConnection::sendInLoop(const std::string &msg) {
                     outputBuffer_.append(msg.c_str() + nwrite,msg.length() - nwrite);
                     LOG_TRACE << "outpubuffer size:"<< outputBuffer_.readableBytes();
                     channel_->enableWrite();
+                }else{
+                    writeCompleteCallback(shared_from_this());
                 }
 
             }else{
@@ -133,11 +143,13 @@ void TcpConnection::sendInLoop(const std::string &msg) {
 }
 
 void TcpConnection::handleWriteEvent() {
+        loop_->assertInLoopThread();
         LOG_TRACE<<"handleWriteEvent<< current status: " << kStatus_;
         if(kStatus_ == closing){
             if(outputBuffer_.readableBytes() == 0 ){
                 assert(channel_->isWtriting());
                 channel_->disableWriting();
+                writeCompleteCallback(shared_from_this());
                 shutdownInLoop();
 
             }else{
@@ -145,13 +157,14 @@ void TcpConnection::handleWriteEvent() {
                 int nwrite = write(sockfd_.fd(),msg.c_str(),msg.length());
                 if(nwrite >= 0) {
                     if (nwrite < msg.length()) {
-                        LOG_TRACE << "write blocked" << std::endl;
+                        LOG_TRACE << "write blocked waiting for writeable" <<"total:" <<msg.length() <<" writed:"<<nwrite;
                         outputBuffer_.append(msg.c_str() + nwrite, msg.length() - nwrite);
                         LOG_TRACE << "outpubuffer size:"<< outputBuffer_.readableBytes();
                         assert(channel_->isWtriting());
                     }else{
                         assert(channel_->isWtriting());
                         channel_->disableWriting();
+                        writeCompleteCallback(shared_from_this());
                         shutdownInLoop();
                     }
                 } else{
@@ -168,6 +181,7 @@ void TcpConnection::handleWriteEvent() {
                 LOG_TRACE << "send over1";
                 assert(channel_->isWtriting());
                 channel_->disableWriting();
+                writeCompleteCallback(shared_from_this());
             }else{
                 std::string msg =  outputBuffer_.retrieveAllAsString();
                 int nwrite = write(sockfd_.fd(),msg.c_str(),msg.length());
@@ -181,6 +195,7 @@ void TcpConnection::handleWriteEvent() {
                         LOG_TRACE << "send over2";
                         assert(channel_->isWtriting());
                         channel_->disableWriting();
+                        writeCompleteCallback(shared_from_this());
                     }
                 } else{
                     if(errno != EAGAIN){
@@ -209,6 +224,17 @@ void TcpConnection::shutdownInLoop() {
         sockfd_.shutdownWrite();
     }
 }
+
+void TcpConnection::destoryChannel() {
+    channel_->disableAll();
+    channel_->removeself();
+}
+
+TcpConnection::~TcpConnection() {
+        kStatus_ = overed;
+}
+
+
 
 
 

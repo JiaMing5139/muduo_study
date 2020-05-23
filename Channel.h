@@ -23,6 +23,7 @@ public:
     bool isWtriting(){return  events_& WriteEvent;}
 
     void enableRead() {events_ |= ReadEvent; update();}
+    void disableAll(){ events_ = 0 ; update();}
 
 
     int index(){return this->index_;}
@@ -58,7 +59,7 @@ private:
     int events_;
     int revents_;
 
-
+    bool status = true;
     EventCallback closeCallback;
     EventCallback writeEventCallback;
     readCallback readEventCallback;

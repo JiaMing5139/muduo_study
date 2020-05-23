@@ -83,6 +83,8 @@ Socket::Socket(int fd) : socketfd_(fd) {
 }
 
 Socket::~Socket() {
+    LOG_TRACE<<"close socket:" << socketfd_ ;
+    alive_ = false;
     close(this->socketfd_);
 }
 

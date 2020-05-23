@@ -23,16 +23,19 @@ events_(0) {
 }
 
 void Channel::handleEvent() {
-    if(revents_ & POLLHUP ){
+    LOG_TRACE<<"Tirggered event: " <<revents_;
+    if(revents_ & POLLHUP && !(revents_ & POLLIN) ){
+        LOG_TRACE<<"do revents_ & POLLHUP && !(revents_ & POLLIN)";
         assert(closeCallback);
         closeCallback();
     }
 
     if(revents_&POLLNVAL){
-        LOG_TRACE<<"WARN:" <<"POLLNVAL";
+        LOG_TRACE<<"do POLLNVAL";
     }
 
     if(revents_ & (POLLIN|POLLPRI|POLLHUP)) {
+        LOG_TRACE<<"do POLLIN|POLLPRI|POLLHUP:";
         assert(readEventCallback);
         readEventCallback(1);
     }
@@ -43,6 +46,7 @@ void Channel::handleEvent() {
         writeEventCallback();
     }
     if(revents_ & (POLLERR|POLLNVAL)) {
+        LOG_TRACE<<"do POLLERR|POLLNVAL";
         assert(errorCallBack);
         errorCallBack();
     }
@@ -54,11 +58,9 @@ void Channel::update() {
 }
 
 void Channel::removeself() {
-
     loop_->cancel(shared_from_this());
-
 }
 
 Channel::~Channel() {
-
+    status = false;
 }
