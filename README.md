@@ -15,7 +15,7 @@ Cmake CMakeLists.text
 make
 ```
 ## 笔记
-#### TcpConnection 
+## TcpConnection 
 
 #### Q1:TcpConnection的状态设计（非阻塞）
 
@@ -33,7 +33,7 @@ closed event(read == 0) | ❌ |if(outputbuffer有数据) {<br>丢弃数据<br>}<
 
 #### Q2:TcpConnection和Channel的生命周期，在one loop per thread中析构正确？
 ```
-（在实现中，Channel用shared_ptr管理
+（在实现中，Channel用shared_ptr管理)
 TcpConnection的shared_ptr被Tcpserver中的TcpConnectionMap一直持有
 Channel的shared_ptr被poll中的ChannelMap和TcpConnection中的成员一直持有
 
@@ -56,7 +56,7 @@ TcpConnection必须位于handlecloseEvent中的最后一行，因为在调用Tcp
 
 #### Q3:TcpConnection相关的临界区和race condition
 
-#### 定时器队列
+## 定时器队列
 
 #### Q1:为什么已经有了Timerfd，还要用TimerQueue去维护定时器的触发？
 ```
@@ -95,7 +95,7 @@ Timer/TimerQueueBase
 ```
 
 
-#### 
+## 异步日志 
 
 
 ## Benchmark
