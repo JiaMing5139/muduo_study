@@ -14,8 +14,26 @@ Cmake CMakeLists.text
 
 make
 ```
+## 笔记
+#### TcpConnection 
 
-# 遇到的疑惑
+###### Q1:TcpConnection的状态设计（非阻塞）
+
+event\state | closed |  closing | connected 
+-|-|-|-
+new connection | setState(Connected) | ❌ | ❌|
+readable event|  ❌ | 1.读取数据到inputbuffer <br>2.调用onMessagecallback |1.读取数据到inputbuffer  <br>2.调用onMessagecallback|
+send          | ❌ | ❌ |if(outputbuffer有数据){<br>添加数据到outputbuffer<br>} else{<br>尝试发送数据，若没有发送完，则添加到outputbufer中，并监听可写事件，若发送完毕调用writeCompleteCallback<br>}|
+writeable event| ❌ | if(outputbuffer有数据) {<br>尝试发送outputbuffer中的数据，未发送的添加到outputbuffer中，若发送完毕，关闭监听可读事件,调用writeCompleteCallback，<br>继续shutdown<br>} |if(outputbuffer有数据){<br>尝试发送outputbuffer中的数据，未发送的添加到outputbuffer中，若发送完毕，关闭监听可读事件,调用writeCompleteCallback<br>}|
+shutdown | ❌ | ❌ |if(outputbuffer有数据) {<br>setState(closing)<br>}else{调用shutdown}|
+closed event(read == 0) | ❌ |if(outputbuffer有数据) {<br>丢弃数据<br>}<br>  在poll,和Tcpserver中析构资源<br>setState(closed) |if(outputbuffer有数据) {<br>丢弃数据<br>}<br> 在poll,和Tcpserver中析构资源<br>setState(closed) |
+
+
+在关闭时，如果网络库管理的输出缓冲区还有数据，是否需要继续发送出去？如果遇到sigpipe则忽略掉？
+###### Q2:TcpConnection的生命周期
+
+###### Q3:TcpConnection相关的临界区和race condition
+
 #### 定时器队列
 
 ###### Q1:为什么已经有了Timerfd，还要用TimerQueue去维护定时器的触发？
@@ -53,7 +71,8 @@ Timer/TimerQueueBase
 ```
 
 ```
-#### TcpConnection 生命周期/状态转移
+
+
 #### 异步日志
 
 
