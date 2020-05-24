@@ -25,8 +25,8 @@ loop_(loop)
 {  // refcount of channel =  1
 //    channel_->enableWrite();
     sockfd_.setTcpNoDelay(true);
-    sockfd_.setReuseAddr(true);
-    sockfd_.setKeepAlive(true);
+  //  sockfd_.setReuseAddr(true);
+   // sockfd_.setKeepAlive(true);
     writeCompleteCallback  = defaultCompleteCallback;
 }
 

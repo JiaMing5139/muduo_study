@@ -17,7 +17,8 @@ void Socket::listen() {
     sockets::listenOrDie(this->socketfd_);
 }
 
-void Socket::connect() {
+void Socket::connect(InetAddress addr) {
+
 
 }
 
@@ -74,7 +75,7 @@ void Socket::shutdownWrite() {
     sockets::shutdown(socketfd_,SHUT_WR);
 }
 
-Socket::Socket() : socketfd_(sockets::createNonblockingOrDie(AF_INET)) {
+Socket::Socket() : socketfd_(sockets::createblockingOrDie(AF_INET)) {
 
 }
 

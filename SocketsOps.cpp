@@ -61,15 +61,15 @@ int sockets::createNonblockingOrDie(sa_family_t family)
     return sockfd;
 }
 
-//int sockets::createblockingOrDie(sa_family_t family)
-//{
-//    int sockfd = ::socket(family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
-//    if (sockfd < 0)
-//    {
-//        LOG_SYSFATAL << "sockets::createNonblockingOrDie";
-//    }
-//    return sockfd;
-//}
+int sockets::createblockingOrDie(sa_family_t family)
+{
+    int sockfd = ::socket(family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
+    if (sockfd < 0)
+    {
+        LOG_SYSFATAL << "sockets::createNonblockingOrDie";
+    }
+    return sockfd;
+}
 
 void sockets::bindOrDie(int sockfd, const struct sockaddr* addr)
 {
@@ -93,18 +93,19 @@ int sockets::accept(int sockfd, struct sockaddr_in6* addr)
 {
     socklen_t addrlen = static_cast<socklen_t>(sizeof *addr);
 
-#if __APPLE__
+#if 1
     int connfd = ::accept(sockfd, sockaddr_cast(addr), &addrlen);
     setNonBlockAndCloseOnExec(connfd);
 #else
     int connfd = ::accept4(sockfd, sockaddr_cast(addr),
                            &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
 #endif
-    struct sockaddr_in tmp= *(struct sockaddr_in*)addr;
+   // struct sockaddr_in tmp= *(struct sockaddr_in*)addr;
 #
 
     if (connfd < 0)
     {
+        perror("accept");
         int savedErrno = errno;
         LOG_TRACE << "Socket::accept";
         perror("accpet");

@@ -14,7 +14,7 @@ public:
     ~Socket();
     void bindAddress(InetAddress addr);
     void listen();
-    void connect();
+    void connect(InetAddress addr);
 
     int accept(InetAddress * peerAddr);
     int fd() const  {return socketfd_;}

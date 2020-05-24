@@ -58,7 +58,7 @@ Epoll::~Epoll() {
 void Epoll::poller_wait(int timeOut, Poller::Channelptrlist *activedChannels) {
     //epoll wait
 
-    int  numEvents = ::epoll_wait(this->epollfd_,&*events_.begin(),kInitEventListSize,timeOut);
+    int  numEvents = ::epoll_wait(this->epollfd_,&*events_.begin(),events_.size(),timeOut);
 
     if (numEvents > 0) {
          LOG_TRACE << "Epoll: epoll:" <<numEvents << " happened" ;

@@ -32,9 +32,9 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
     ifabort(ifabort)
     {
         time_t seconds = ::time(nullptr);
-       // auto locoaltimeStruct = localtime(&seconds);
-      //  std::string time_s(asctime(locoaltimeStruct));
-        std::string time_s ="None";
+       auto locoaltimeStruct = localtime(&seconds);
+        std::string time_s(asctime(locoaltimeStruct));
+      //  std::string time_s ="None";
        // time_s.pop_back();
         std:: string log_type;
         switch (level){

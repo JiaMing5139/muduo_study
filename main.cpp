@@ -32,6 +32,7 @@ void g_output(const char * msg,size_t len){
 
 void setAsynLog(){
     Jimmy::Logger::setOutput(g_output);
+    Jimmy::Logger::setLevel(Jimmy::Logger::TRACE);
     asyn->start();
 }
 
@@ -276,7 +277,7 @@ void testHttpServer(){
     loop->loop();
 }
 
-/**EventThreaddPool**/
+/**test EventThreaddPool**/
 
 void testEventThreaddPool() {
      loop= new EventLoop;
@@ -296,8 +297,15 @@ void testEventThreaddPool() {
 
 }
 
+/**test Connector**/
+
+void testConnector(){
+
+}
+
+
 int main() {
-    // setAsynLog();
+     setAsynLog();
     //loggerTest();
     //testEventLoop();
     //testTimerQueue();
