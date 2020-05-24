@@ -113,7 +113,6 @@ Timer/TimerQueueBase
 ### Naggle算法
 ### 优化Loacltime,对时间进行缓冲。
 
-### 引入StringPiece
 
 
 # To do list
