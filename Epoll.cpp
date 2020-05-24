@@ -61,14 +61,14 @@ void Epoll::poller_wait(int timeOut, Poller::Channelptrlist *activedChannels) {
     int  numEvents = ::epoll_wait(this->epollfd_,&*events_.begin(),kInitEventListSize,timeOut);
 
     if (numEvents > 0) {
-         LOG_TRACE << "number: epoll:" <<numEvents << " happened" ;
+         LOG_TRACE << "Epoll: epoll:" <<numEvents << " happened" ;
          if(implicit_cast<size_t>(numEvents) == events_.size()){
              events_.resize(events_.size() * 2);
          }
          fillActiveChannels( numEvents,  activedChannels);
 
     } else if(numEvents == 0){
-        LOG_TRACE << "noting happened" ;
+       // LOG_TRACE << "noting happened" ;
     }else{
         if(errno != EINTR){
             perror("poller_wait");

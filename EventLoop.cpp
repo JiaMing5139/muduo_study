@@ -58,6 +58,7 @@ void EventLoop::loop() {
 
     while(!quit_){
         activedChannls.clear();
+        LOG_TRACE << "poller_wait   listened channel's num " << poll_->channelNum();
         poll_->poller_wait(-1,&activedChannls);
         LOG_TRACE << "actived Channels size:" << activedChannls.size();
         for(const auto &channel: activedChannls){
@@ -117,18 +118,18 @@ void EventLoop::runEvery(double interval, TimerCallback cb) {
 }
 
 void EventLoop::runInLoop( funcCallback cb) {
-    LOG_TRACE << "runInLoop threadId:" ;
+  //  LOG_TRACE << "runInLoop threadId:" ;
     if(runInthread()){
-        LOG_TRACE << "runInLoop was already in current loop" ;
+   //     LOG_TRACE << "runInLoop was already in current loop" ;
         cb();
     }else{
         queueInloop(cb);
     }
 }
 
-//被runinloop调用，只会在非loop线程中被调用
+
 void EventLoop::queueInloop(funcCallback cb) {
-    LOG_TRACE << "try to add a new functor in loop" ;
+  //  LOG_TRACE << "try to add a new functor in loop" ;
     {
         std::lock_guard<std::mutex> lock(mutex_);
         funcList_.push_back(std::move(cb));
@@ -138,14 +139,9 @@ void EventLoop::queueInloop(funcCallback cb) {
    // 2.若在IO线程外直接调用queueInloop，则需要在分析在callback中再次调用queueInloop，
    // 即在当前线程中再次直接调用queueloop，这时需要进行callingPendingFunctors_的判断
     if (!runInthread() || callingPendingFunctors_)
-        //让一批functor一次执行完毕
-    //并不是每次都需要唤醒eventloop 理解为一批新加入的functor调用一次wakeup，什么时候换到下一批？ funclist被交换成空的之后
-    if(!doingFunctors) {
-        LOG_TRACE << " try to WAKE UP ,because of new funcotr" ;
         wakeup();
-        doingFunctors = true; //protected by atomic
-    }
-   LOG_TRACE << " queueInloop last line" ;
+
+
 }
 
 
@@ -156,10 +152,9 @@ void EventLoop::doPendingFunctors() {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         tmp_funlist.swap(funcList_);
-        doingFunctors = false;
     }
 
-    LOG_TRACE << "doPendingFunctors: try to call callback functorlist size:" << tmp_funlist.size();
+ //   LOG_TRACE << "doPendingFunctors: try to call callback functorlist size:" << tmp_funlist.size();
     for(const auto &f:tmp_funlist){
         f();
     }
@@ -172,7 +167,7 @@ void EventLoop::doPendingFunctors() {
 }
 
 void EventLoop::wakeup() {
-    LOG_TRACE<< "try to wakeup evenloop in :" << threadId_ ;
+  //  LOG_TRACE<< "try to wakeup evenloop in :" << threadId_ ;
     int ret =  eventfd_write(wakeUpfd_,1);
     if (ret == -1){
         perror("eventfd_write");

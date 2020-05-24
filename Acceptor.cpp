@@ -19,9 +19,11 @@ newConnectionCallback(std::move(cb)),
 localAddr_(addr)
 {
     LOG_TRACE <<"Accepotr created listenfd:" << channel_->fd() ;
-    listenfd_.bindAddress(addr);
     listenfd_.setReuseAddr(true);
     listenfd_.setReusePort(true);
+    listenfd_.bindAddress(addr);
+
+   // listenfd_.setReusePort(true);
 }
 
 Acceptor::Acceptor(const InetAddress &addr,EventLoop * loop):
@@ -31,9 +33,10 @@ Acceptor::Acceptor(const InetAddress &addr,EventLoop * loop):
         localAddr_(addr)
 {
     LOG_TRACE <<"Accepotr created listenfd:" << channel_->fd() ;
-    listenfd_.bindAddress(addr);
     listenfd_.setReuseAddr(true);
     listenfd_.setReusePort(true);
+    listenfd_.bindAddress(addr);
+
 }
 
 

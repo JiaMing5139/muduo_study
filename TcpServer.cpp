@@ -28,7 +28,7 @@ TcpServer::TcpServer(const InetAddress &addr,EventLoop * loop):
 acceptor_(addr,loop),
 loop_(loop),
 localaddr_(addr),
-eventLoopThreadPool_(loop,3)
+eventLoopThreadPool_(loop,1)
 {
      acceptor_.setNewConnectionCallback(bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
      loop->runInLoop(std::bind(&Acceptor::listen,&acceptor_));
@@ -44,7 +44,7 @@ void TcpServer::newConnectionCallback( int fd, const InetAddress & peerAddress) 
     tcpConnectionptr->setInetAddress(peerAddress,localaddr_);
 
     LOG_TRACE<<"Tcpserver: NewConnectionacallback:" <<tcpConnectionptr->peerAddr()<<"->"
-             << tcpConnectionptr->localAddr() <<" refcount " << tcpConnectionptr.use_count();
+             << tcpConnectionptr->localAddr() << " assigned fd:" << fd ;
     tcpConnectionptr->setOnMessageCallback(onMessage_);
     tcpConnectionptr->setOnConnectionCallback(onConnection_);
     tcpConnectionptr->setOnClosedCallback(bind(&TcpServer::removeTcpConnection,this,std::placeholders::_1));
@@ -61,11 +61,8 @@ void TcpServer::removeTcpConnection(const TcpServer::TcpConnectionptr &conn) {
 
 void TcpServer::removeInLoop(const TcpConnectionptr & conn) {
     loop_->assertInLoopThread();
-
-
-    LOG_TRACE <<"try to remove TcpConnection from TcpServer current :refcount of conn is " << conn.use_count();
+   // LOG_TRACE <<"try to remove TcpConnection from TcpServer current :refcount of conn is " << conn.use_count();
     int ret = tcpConnectionMap_.erase(conn->fd());
-
     assert(ret != 0);
 
 }

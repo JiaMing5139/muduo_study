@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(muduo_study)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-lpthread")
+set(CMAKE_CXX_FLAGS "-lpthread -O2")
 
 add_executable(muduo_study
         main.cpp

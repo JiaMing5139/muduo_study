@@ -295,7 +295,7 @@ void testEventThreaddPool() {
 }
 
 int main() {
-    // setAsynLog();
+     setAsynLog();
     //loggerTest();
     //testEventLoop();
     //testTimerQueue();
@@ -305,7 +305,7 @@ int main() {
      //testDownloadserver();
     //testBuffer();
     testHttpServer();
-   // testEchoserver();
+    //testEchoserver();
     // testEventThreaddPool();
 //   std:: cout <<readFile("test") <<std::endl;
 

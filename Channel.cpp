@@ -19,23 +19,19 @@ index_(-1),
 loop_(loop),
 revents_(0),
 events_(0) {
-    LOG_TRACE<<" genernate a new Channel";
 }
 
 void Channel::handleEvent() {
-    LOG_TRACE<<"Tirggered event: " <<revents_;
     if(revents_ & POLLHUP && !(revents_ & POLLIN) ){
-        LOG_TRACE<<"do revents_ & POLLHUP && !(revents_ & POLLIN)";
+        LOG_TRACE<<"do revents_ & POLLHUP && !(revents_ & POLLIN) : fd" << fd_;
         assert(closeCallback);
         closeCallback();
     }
 
     if(revents_&POLLNVAL){
-        LOG_TRACE<<"do POLLNVAL";
     }
 
     if(revents_ & (POLLIN|POLLPRI|POLLHUP)) {
-        LOG_TRACE<<"do POLLIN|POLLPRI|POLLHUP:";
         assert(readEventCallback);
         readEventCallback(1);
     }
@@ -46,7 +42,6 @@ void Channel::handleEvent() {
         writeEventCallback();
     }
     if(revents_ & (POLLERR|POLLNVAL)) {
-        LOG_TRACE<<"do POLLERR|POLLNVAL";
         assert(errorCallBack);
         errorCallBack();
     }

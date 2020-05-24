@@ -54,7 +54,7 @@ void sockets::bindOrDie(int sockfd, const struct sockaddr* addr)
 
 void sockets::listenOrDie(int sockfd)
 {
-    int ret = ::listen(sockfd, SOMAXCONN);
+    int ret = ::listen(sockfd, 1000);
     if (ret < 0)
     {
         LOG_SYSFATAL << "sockets::listenOrDie fd:" <<sockfd;

@@ -18,7 +18,7 @@ public:
     virtual void updateChannel(EventLoop::Channelptr) = 0;
     virtual void removeChannel(EventLoop::Channelptr) = 0;
     virtual bool hasChannel(EventLoop::Channelptr) = 0;
-
+    virtual int channelNum() {return channels_.size();};
     void assertInLoopThread(){
         ownerLoop_->assertInLoopThread();
     }
