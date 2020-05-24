@@ -1,7 +1,7 @@
 //
 // Created by parallels on 5/24/20.
 //
-#ifdef __linux__
+#ifdef __APPLE__
 #ifndef MUDUO_STUDY_KQUEUE_H
 #define MUDUO_STUDY_KQUEUE_H
 

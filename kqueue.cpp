@@ -5,10 +5,6 @@
 
 #ifdef __APPLE__
 #include "kqueue.h"
-
-
-#endif
-
 kqueue::kqueue(EventLoop *loop) : Poller(loop) {
 
 }
@@ -32,3 +28,7 @@ bool kqueue::hasChannel(Poller::Channelptr) {
 kqueue::~kqueue() {
 
 }
+
+#endif
+
+
