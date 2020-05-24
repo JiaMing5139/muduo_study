@@ -46,7 +46,7 @@ add_executable(muduo_study
         Buffer.cpp
         Buffer.h
         httpForTest/httpRequest.cpp
-        httpForTest/Response.cpp LoopThreadPool.cpp LoopThreadPool.h kqueue.cpp kqueue.h myeventFd.cpp myeventFd.h Timer/TimerQueuebaseMacos.cpp Timer/TimerQueuebaseMacos.h Connector.cpp Connector.h)
+        httpForTest/Response.cpp LoopThreadPool.cpp LoopThreadPool.h kqueue.cpp kqueue.h myeventFd.cpp myeventFd.h Timer/TimerQueuebaseMacos.cpp Timer/TimerQueuebaseMacos.h Connector.cpp Connector.h TcpClient.cpp TcpClient.h)
 find_package (Threads REQUIRED)
 
 target_link_libraries(muduo_study
