@@ -11,11 +11,21 @@
 #endif
 
 int Jimmy::myeventFd::eventfd_read() {
+#ifdef __APPLE__
     int value;
     int ret = read(readfd_,&value,sizeof value);
     if(ret == -1){
         LOG_SYSFATAL <<"write";
     }
+#endif
+#ifdef __linux__
+    eventfd_t value;
+    int ret = ::eventfd_read(readfd_, &value);
+    if (ret == -1){
+        perror("eventfd_read");
+        abort();
+    }
+#endif
 }
 
 int Jimmy::myeventFd::fd() {
@@ -23,12 +33,21 @@ int Jimmy::myeventFd::fd() {
 }
 
 int Jimmy::myeventFd::eventfd_write() {
+#ifdef __APPLE__
     int value = 1;
     int ret = write(fds[1],&value,sizeof value);
     if(ret == -1){
         LOG_SYSFATAL <<"write";
     }
     return 0;
+#endif
+
+#ifdef __linux__
+    int ret =  ::eventfd_write(readfd_,1);
+    if (ret == -1){
+        LOG_SYSFATAL<<"eventfd_write";
+    }
+#endif
 }
 
 Jimmy::myeventFd::myeventFd():
@@ -62,7 +81,7 @@ Jimmy::myeventFd::~myeventFd() {
 #endif
 
 #ifdef __linux__
-    close readfd_;
+    close(readfd_);
 #endif
 }
 

@@ -5,7 +5,9 @@
 #include "TimerQueuebase.h"
 #include "Timestamp.h"
 #include "../EventLoop.h"
-//#include <sys/timerfd.h>
+#ifdef __linux__
+#include <sys/timerfd.h>
+#endif
 #include "../log/logger.h"
 #include "../Channel.h"
 #include <string.h>
