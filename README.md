@@ -100,6 +100,20 @@ Timer/TimerQueueBase
 
 
 
+# Benchmark
+简单解析http，测试吞吐量，测试优化效果
+
+### 无LOG 
+并发数\线程数 | 1 |  2 | 4 
+-|-|-|-
+50| 16734 | 19678 |20331 |
+200| 15532| 22138 |21451 |
+
+### 有LOG
+### Naggle算法
+### 优化Loacltime,对时间进行缓冲。
+
+### 引入StringPiece
 
 
 # To do list
