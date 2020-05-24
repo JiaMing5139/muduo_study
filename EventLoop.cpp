@@ -33,7 +33,7 @@ EventLoop::EventLoop() :
 #endif
         looping_(false),
         quit_(true),
-        timerQueue(this),
+//        timerQueue(this),
         wakeUpfd_(),
         wakeupChannel_(new Channel( this,wakeUpfd_.fd())),
         doingFunctors(false),
@@ -107,20 +107,20 @@ void EventLoop::quit() {
     }
 }
 
-void EventLoop::runAt(Timestamp timerstamp, TimerCallback cb) {
-    timerQueue.addTimer(timerstamp,cb,0);
-
-}
-
-void EventLoop::runAfter(double delay, TimerCallback cb) {
-    Timestamp timestamp(addTime(Timestamp::now(),delay));
-    timerQueue.addTimer(timestamp,cb,0);
-}
-
-void EventLoop::runEvery(double interval, TimerCallback cb) {
-    Timestamp timestamp(addTime(Timestamp::now(),interval));
-    timerQueue.addTimer(timestamp,cb,interval);
-}
+//void EventLoop::runAt(Timestamp timerstamp, TimerCallback cb) {
+//    timerQueue.addTimer(timerstamp,cb,0);
+//
+//}
+//
+//void EventLoop::runAfter(double delay, TimerCallback cb) {
+//    Timestamp timestamp(addTime(Timestamp::now(),delay));
+//    timerQueue.addTimer(timestamp,cb,0);
+//}
+//
+//void EventLoop::runEvery(double interval, TimerCallback cb) {
+//    Timestamp timestamp(addTime(Timestamp::now(),interval));
+//    timerQueue.addTimer(timestamp,cb,interval);
+//}
 
 void EventLoop::runInLoop( funcCallback cb) {
   //  LOG_TRACE << "runInLoop threadId:" ;

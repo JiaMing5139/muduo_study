@@ -15,7 +15,10 @@ namespace CurrentThread{
          __thread const char* t_threadName = nullptr;
 
         pid_t gettid(){
-            return  static_cast<pid_t >(syscall(SYS_gettid));
+            int i  =syscall(SYS_gettid);
+
+            return  static_cast<pid_t >(i);
+
         }
 
         void cacheTid(){

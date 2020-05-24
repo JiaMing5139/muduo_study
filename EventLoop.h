@@ -32,13 +32,13 @@ public:
 
 
     // TimerId用于指定定时器操作（像取消操作) 尚未实现
-    void runAt(Timestamp timerstamp, TimerCallback cb);
-    void runAfter(double delay, TimerCallback cb);
-    void runEvery(double interval, TimerCallback cb);
+//    void runAt(Timestamp timerstamp, TimerCallback cb);
+//    void runAfter(double delay, TimerCallback cb);
+//    void runEvery(double interval, TimerCallback cb);
 
 
     void runInLoop( funcCallback  cb);
-
+    void wakeup();
 private:
     bool runInthread();
     void abortInthread();
@@ -47,13 +47,13 @@ private:
     const std::unique_ptr<Poller> poll_; // can't be copied and moved,replace scoped_ptr
     Channelptrlist activedChannls;
 
-    TimerQueue timerQueue;
+//    TimerQueue timerQueue;
     std::atomic<bool> looping_;
     std::atomic<bool> quit_;
 
 
     void queueInloop(funcCallback );
-    void wakeup();
+
     void doPendingFunctors();
     std::atomic<bool> doingFunctors;
     std::atomic<bool> callingPendingFunctors_;

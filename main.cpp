@@ -21,8 +21,8 @@
 #include "httpForTest/httpRequest.h"
 #include "httpForTest/Response.h"
 #include "LoopThreadPool.h"
-
-
+#include "SocketsOps.h"
+#include "Channel.h"
 /**  Test Asynlog  **/
 
 std::unique_ptr<AsyncLogging> asyn(new AsyncLogging("fuck"));
@@ -68,100 +68,120 @@ void testEventLoop(){
     loop->loop();
 }
 #endif
-/**  Test Reactor  **/
-void testTimerQueue(){
-    // loggerTest();
+
+void testEventLoop(){
     loop= new EventLoop;
-    TimerQueue base(loop);
-    Timestamp timestamp(Timestamp::now());
-
-    std::thread t([](){
-        loop->runAfter(3,std::bind(&timeout, 1));
-    });
-
-
-    loop->loop();
-    t.join();
-}
-
-/**  Test RunInloop  **/
-
-
-void testRunInLoop(){
-    loop= new EventLoop;
-    std::thread test([](){
-
-        loop->runInLoop([](){
-            std::cout << "run in loop 1" << std::endl;
-            loop->runInLoop([](){
-                std::cout << "run in loop loop" << std::endl;
-            });
-
-        });
-
-
-    });
-    std::thread t([](){
-        loop->runAfter(3,std::bind(&timeout, 1));
-    });
-
-    loop->loop();
-}
-/**  Test EventLoopThread  **/
-void runInThread()
-{
-    printf("runInThread(): pid = %d, tid = %d\n",
-           getpid(), Jimmy::CurrentThread::tid());
-}
-void testEventLoopThread(){
-    EventLoopThread t;
-    EventLoop * loop_ =  t.startLoop();
-    loop_->runInLoop(runInThread);
-    usleep(1);
-    loop_->runAfter(2, runInThread);
-    sleep(3);
-    loop_->quit();
-}
-
-/** Test Acceptor**/
-void testAccepotr(){
-    loop= new EventLoop;
+    int socketfd = sockets::createNonblockingOrDie(AF_INET);
     InetAddress addr(2333);
-    Acceptor acceptor(addr,loop);
-    acceptor.setNewConnectionCallback([](int fd,const InetAddress & addr){
-        LOG_TRACE<<"new connection";
-        Buffer inputBuffer;
-        int savedErrno;
-        inputBuffer.readFd(fd,&savedErrno);
-        LOG_TRACE<<inputBuffer.retrieveAllAsString();
+    Socket sock(socketfd);
+    sock.bindAddress(addr);
+    sock.listen();
+    int aa = 0;
+    std::shared_ptr<Channel> channelptr (new Channel(loop,sock.fd()));
+    channelptr->setReadCallBack([&](int i){
+        InetAddress addr;
+        sock.accept(&addr);
+        loop->wakeup();
+
     });
-    acceptor.listen();
+    channelptr->enableRead();
     loop->loop();
 }
 
-/**test Buffer**/
-void testBuffer(){
-    Buffer buffer;
-    int savedErrno;
-    //input 6 chars
-    buffer.readFd(STDIN_FILENO,&savedErrno);
-    // test readfd
-    std::cout << buffer.debugInfo() << std::endl;
-    // test retrieveAllAsString
-    std::string s =buffer.retrieveAsString(4);
-    std::cout << "content:"<< s  << std::endl;
-    std::cout << buffer.debugInfo() << std::endl;
-    //input 4 chars for test  makeSpace
-    buffer.readFd(STDIN_FILENO,&savedErrno);
-    std::cout << buffer.debugInfo() << std::endl;
-    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
-    //input 4  chars for test resize the buffer
-    buffer.readFd(STDIN_FILENO,&savedErrno);
-    std::cout << buffer.debugInfo() << std::endl;
-    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
-
-
-}
+///**  Test Reactor  **/
+//void testTimerQueue(){
+//    // loggerTest();
+//    loop= new EventLoop;
+//    TimerQueue base(loop);
+//    Timestamp timestamp(Timestamp::now());
+//
+//    std::thread t([](){
+//        loop->runAfter(3,std::bind(&timeout, 1));
+//    });
+//
+//
+//    loop->loop();
+//    t.join();
+//}
+//
+///**  Test RunInloop  **/
+//
+//
+//void testRunInLoop(){
+//    loop= new EventLoop;
+//    std::thread test([](){
+//
+//        loop->runInLoop([](){
+//            std::cout << "run in loop 1" << std::endl;
+//            loop->runInLoop([](){
+//                std::cout << "run in loop loop" << std::endl;
+//            });
+//
+//        });
+//
+//
+//    });
+//    std::thread t([](){
+//        loop->runAfter(3,std::bind(&timeout, 1));
+//    });
+//
+//    loop->loop();
+//}
+///**  Test EventLoopThread  **/
+//void runInThread()
+//{
+//    printf("runInThread(): pid = %d, tid = %d\n",
+//           getpid(), Jimmy::CurrentThread::tid());
+//}
+//void testEventLoopThread(){
+//    EventLoopThread t;
+//    EventLoop * loop_ =  t.startLoop();
+//    loop_->runInLoop(runInThread);
+//    usleep(1);
+//    loop_->runAfter(2, runInThread);
+//    sleep(3);
+//    loop_->quit();
+//}
+//
+///** Test Acceptor**/
+//void testAccepotr(){
+//    loop= new EventLoop;
+//    InetAddress addr(2333);
+//    Acceptor acceptor(addr,loop);
+//    acceptor.setNewConnectionCallback([](int fd,const InetAddress & addr){
+//        LOG_TRACE<<"new connection";
+//        Buffer inputBuffer;
+//        int savedErrno;
+//        inputBuffer.readFd(fd,&savedErrno);
+//        LOG_TRACE<<inputBuffer.retrieveAllAsString();
+//    });
+//    acceptor.listen();
+//    loop->loop();
+//}
+//
+///**test Buffer**/
+//void testBuffer(){
+//    Buffer buffer;
+//    int savedErrno;
+//    //input 6 chars
+//    buffer.readFd(STDIN_FILENO,&savedErrno);
+//    // test readfd
+//    std::cout << buffer.debugInfo() << std::endl;
+//    // test retrieveAllAsString
+//    std::string s =buffer.retrieveAsString(4);
+//    std::cout << "content:"<< s  << std::endl;
+//    std::cout << buffer.debugInfo() << std::endl;
+//    //input 4 chars for test  makeSpace
+//    buffer.readFd(STDIN_FILENO,&savedErrno);
+//    std::cout << buffer.debugInfo() << std::endl;
+//    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+//    //input 4  chars for test resize the buffer
+//    buffer.readFd(STDIN_FILENO,&savedErrno);
+//    std::cout << buffer.debugInfo() << std::endl;
+//    std::cout << "content:"<< buffer.peekAllAsString()<< std::endl;
+//
+//
+//}
 
 /** Test downLoadServer 测试大文件发送**/
 std::string readFile(const char* filename)
@@ -299,14 +319,14 @@ void testEventThreaddPool() {
 int main() {
     // setAsynLog();
     //loggerTest();
-    //testEventLoop();
+   // testEventLoop();
     //testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
     // testAccepotr();
      //testDownloadserver();
     //testBuffer();
-    testHttpServer();
+     testHttpServer();
     //testEchoserver();
     // testEventThreaddPool();
 //   std:: cout <<readFile("test") <<std::endl;
