@@ -6,11 +6,27 @@
 #include <cstdint>
 #include "log/logger.h"
 #include "base/Types.h"
+#include <fcntl.h>
+void setNonBlockAndCloseOnExec(int sockfd)
+{
+    // non-block
+    int flags = ::fcntl(sockfd, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    int ret = ::fcntl(sockfd, F_SETFL, flags);
+
+    // close-on-exec
+    flags = ::fcntl(sockfd, F_GETFD, 0);
+    flags |= FD_CLOEXEC;
+    ret = ::fcntl(sockfd, F_SETFD, flags);
+
+    (void)ret;
+}
+
 void sockets::fromIpPort(const char* ip, uint16_t port,
                          struct sockaddr_in* addr)
 {
     addr->sin_family = AF_INET;
-    addr->sin_port = htobe16(port);
+    addr->sin_port = htons(port);
     if (::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0)
     {
         LOG_SYSFATAL << "sockets::fromIpPort";
@@ -25,23 +41,35 @@ void sockets::fromIpPort(const char* ip, uint16_t port,
 
 int sockets::createNonblockingOrDie(sa_family_t family)
 {
+#ifdef SOCK_NONBLOCK
     int sockfd = ::socket(family, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sockfd < 0)
     {
         LOG_SYSFATAL << "sockets::createNonblockingOrDie";
     }
-    return sockfd;
-}
+#else
+    int sockfd = ::socket(family, SOCK_STREAM, IPPROTO_TCP);
 
-int sockets::createblockingOrDie(sa_family_t family)
-{
-    int sockfd = ::socket(family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sockfd < 0)
     {
         LOG_SYSFATAL << "sockets::createNonblockingOrDie";
     }
+    setNonBlockAndCloseOnExec(sockfd);
+#endif
+
+
     return sockfd;
 }
+
+//int sockets::createblockingOrDie(sa_family_t family)
+//{
+//    int sockfd = ::socket(family, SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP);
+//    if (sockfd < 0)
+//    {
+//        LOG_SYSFATAL << "sockets::createNonblockingOrDie";
+//    }
+//    return sockfd;
+//}
 
 void sockets::bindOrDie(int sockfd, const struct sockaddr* addr)
 {
@@ -65,9 +93,15 @@ int sockets::accept(int sockfd, struct sockaddr_in6* addr)
 {
     socklen_t addrlen = static_cast<socklen_t>(sizeof *addr);
 
+#if __APPLE__
+    int connfd = ::accept(sockfd, sockaddr_cast(addr), &addrlen);
+    setNonBlockAndCloseOnExec(connfd);
+#else
     int connfd = ::accept4(sockfd, sockaddr_cast(addr),
                            &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+#endif
     struct sockaddr_in tmp= *(struct sockaddr_in*)addr;
+#
 
     if (connfd < 0)
     {

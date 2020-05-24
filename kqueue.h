@@ -9,6 +9,7 @@
 #include "log/logger.h"
 
 class kqueue :public Poller{
+public:
     explicit kqueue(EventLoop* loop);
     void poller_wait(int timeOut, Channelptrlist* activedChannels) override ;
     void updateChannel(Channelptr) override ;

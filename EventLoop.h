@@ -9,6 +9,7 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include "myeventFd.h"
 class Poller;
 class Channel;
 class EventLoop: noncopyable{
@@ -56,7 +57,8 @@ private:
     void doPendingFunctors();
     std::atomic<bool> doingFunctors;
     std::atomic<bool> callingPendingFunctors_;
-    int wakeUpfd_;
+    //int wakeUpfd_;
+    Jimmy::myeventFd wakeUpfd_;
     std::shared_ptr<Channel> wakeupChannel_;
     std::vector<funcCallback> funcList_;
     std::mutex mutex_;

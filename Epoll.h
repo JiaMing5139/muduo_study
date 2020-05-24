@@ -4,7 +4,7 @@
 
 #ifndef MUDUO_STUDY_EPOLL_H
 #define MUDUO_STUDY_EPOLL_H
-
+#ifdef __linux__
 #include "Poller.h"
 #include "log/logger.h"
 #include <sys/epoll.h>
@@ -43,3 +43,4 @@ private:
 
 
 #endif //MUDUO_STUDY_EPOLL_H
+#endif

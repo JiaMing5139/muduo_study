@@ -74,7 +74,7 @@ void Socket::shutdownWrite() {
     sockets::shutdown(socketfd_,SHUT_WR);
 }
 
-Socket::Socket() : socketfd_(sockets::createblockingOrDie(AF_INET)) {
+Socket::Socket() : socketfd_(sockets::createNonblockingOrDie(AF_INET)) {
 
 }
 

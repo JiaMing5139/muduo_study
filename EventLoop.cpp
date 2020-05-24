@@ -3,34 +3,39 @@
 #include "base/currentThread.h"
 #include "log/logger.h"
 #include "Epoll.h"
-#include <sys/eventfd.h>
-#include <assert.h>
-__thread EventLoop * loop_ = 0 ;
-int createEventfd(){
-    int ret = eventfd(0,EFD_NONBLOCK);
-    if (ret == -1){
-        perror("eventfd_create");
-        abort();
-    }
-}
 
-void readEventfd(int fd){
-    eventfd_t value;
-    int ret = eventfd_read(fd, &value);
-    if (ret == -1){
-        perror("eventfd_read");
-        abort();
-    }
-}
+#include <assert.h>
+#include "kqueue.h"
+__thread EventLoop * loop_ = 0 ;
+//int createEventfd(){
+//    int ret = eventfd(0,EFD_NONBLOCK);
+//    if (ret == -1){
+//        perror("eventfd_create");
+//        abort();
+//    }
+//}
+
+//void readEventfd(int fd){
+//    eventfd_t value;
+//    int ret = eventfd_read(fd, &value);
+//    if (ret == -1){
+//        perror("eventfd_read");
+//        abort();
+//    }
+//}
 
 EventLoop::EventLoop() :
         threadId_(Jimmy::CurrentThread::tid()),
+#ifdef __APPLE__
+        poll_(new kqueue(this)),
+#else
         poll_(new Epoll(this)),
+#endif
         looping_(false),
         quit_(true),
         timerQueue(this),
-        wakeUpfd_(createEventfd()),
-        wakeupChannel_(new Channel( this,wakeUpfd_)),
+        wakeUpfd_(),
+        wakeupChannel_(new Channel( this,wakeUpfd_.fd())),
         doingFunctors(false),
         callingPendingFunctors_(false)
         {
@@ -42,7 +47,7 @@ EventLoop::EventLoop() :
         loop_ = this;
     }
 
-    wakeupChannel_->setReadCallBack(std::bind(readEventfd, wakeUpfd_)); //s
+    wakeupChannel_->setReadCallBack(std::bind(&Jimmy::myeventFd::eventfd_read, &wakeUpfd_)); //s
     wakeupChannel_->enableRead();
 }
 
@@ -168,11 +173,8 @@ void EventLoop::doPendingFunctors() {
 
 void EventLoop::wakeup() {
   //  LOG_TRACE<< "try to wakeup evenloop in :" << threadId_ ;
-    int ret =  eventfd_write(wakeUpfd_,1);
-    if (ret == -1){
-        perror("eventfd_write");
-        abort();
-    }
+    wakeUpfd_.eventfd_write();
+//
 }
 
 

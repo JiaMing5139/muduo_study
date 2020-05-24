@@ -6,7 +6,7 @@
 #include "Epoll.h"
 #include <sys/socket.h>
 #include <memory>
-#include <sys/timerfd.h>
+
 #include <string.h>
 #include "log/AsyncLogging.h"
 #include "log/appendFile.h"
@@ -53,7 +53,8 @@ EventLoop* loop ;
 void timeout(int fd){
     printf("timeout\n");
 }
-
+#ifdef __linux__
+#include <sys/timerfd.h>
 void testEventLoop(){
     loop= new EventLoop;
     int timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
@@ -66,6 +67,7 @@ void testEventLoop(){
     channelptr->enableRead();
     loop->loop();
 }
+#endif
 /**  Test Reactor  **/
 void testTimerQueue(){
     // loggerTest();
@@ -295,7 +297,7 @@ void testEventThreaddPool() {
 }
 
 int main() {
-     setAsynLog();
+    // setAsynLog();
     //loggerTest();
     //testEventLoop();
     //testTimerQueue();

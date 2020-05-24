@@ -5,7 +5,7 @@
 #include "TimerQueuebase.h"
 #include "Timestamp.h"
 #include "../EventLoop.h"
-#include <sys/timerfd.h>
+//#include <sys/timerfd.h>
 #include "../log/logger.h"
 #include "../Channel.h"
 #include <string.h>
@@ -67,6 +67,7 @@ void readTimerfd(int fd){
 
 
 void TimerQueuebase::reset(Timestamp timestamp) {
+#ifdef  __linux__
     LOG_TRACE<<"reset the time of timequeue" << ":" << timestamp ;
     struct itimerspec new_time;
     struct itimerspec old_time;
@@ -78,14 +79,18 @@ void TimerQueuebase::reset(Timestamp timestamp) {
     if(ret == -1){
         LOG_SYSFATAL << "timerfd_set";
     }
+#endif
 
 }
 
 int TimerQueuebase::createTimerFd() {
-    int ret = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC) ;
+    int ret;
+#ifdef  __linux__
+     ret = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC) ;
     if(ret == -1){
         LOG_SYSFATAL << "timerfd_create";
     }
+#endif
     return ret;
 }
 

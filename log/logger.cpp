@@ -11,7 +11,7 @@
 namespace Jimmy {
 Logger::LogLevel initLogLevel(){
     //fixme from a config or env
-    return Logger::CLOSEED;
+    return Logger::TRACE;
 }
 __thread char t_errnobuf[512];
 
@@ -53,7 +53,12 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
 
     Logger::~Logger() {
         if(errno >0 ){
+#ifdef __linux__
             strcpy(t_errnobuf,strerror_r(errno,t_errnobuf,sizeof t_errnobuf));
+#endif
+#ifdef __APPLE__
+            strerror_r(errno,t_errnobuf,sizeof t_errnobuf);
+#endif
             _os <<" errno:" << errno <<" ";
            _os << t_errnobuf;
         }

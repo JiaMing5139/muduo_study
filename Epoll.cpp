@@ -1,7 +1,7 @@
 //
 // Created by parallels on 5/1/20.
 //
-
+#ifdef __linux__
 #include "Epoll.h"
 #include <string.h>
 #include <assert.h>
@@ -125,3 +125,4 @@ void Epoll::fillActiveChannels(int numEvents, Poller::Channelptrlist *actived) {
 
 
 }
+#endif

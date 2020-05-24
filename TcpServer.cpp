@@ -30,7 +30,7 @@ loop_(loop),
 localaddr_(addr),
 eventLoopThreadPool_(loop,1)
 {
-     acceptor_.setNewConnectionCallback(bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
+     acceptor_.setNewConnectionCallback(std::bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
      loop->runInLoop(std::bind(&Acceptor::listen,&acceptor_));
      eventLoopThreadPool_.start();
 }
