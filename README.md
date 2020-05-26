@@ -101,7 +101,7 @@ Timer/TimerQueueBase
 
 
 # Benchmark
-简单解析http，测试吞吐量，测试优化效果
+测试Http Echo Serve
 测试工具 ab 
 #### 无LOG 禁用Nagle
 并发数\线程数 | 1 |  2 | 4 
