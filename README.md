@@ -13,6 +13,12 @@ Linux 多线程服务端编程
 Cmake CMakeLists.text
 
 make
+
+ChatServer
+cd ChatServer
+cmake CMakeList
+./bin/ChatServer port
+./bin/ChatClient ip port
 ```
 ## 笔记
 ## TcpConnection 
