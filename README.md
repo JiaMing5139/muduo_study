@@ -13,7 +13,7 @@ Reactor服务器
 (Cmake Version >= 3.1.5)
 Cmake CMakeLists.text
 make
-./muduostuay
+./muduo_study
 ```
 ChatServer
 ```
