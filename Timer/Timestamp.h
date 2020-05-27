@@ -43,6 +43,14 @@ public:
         return seconds*kMicroSecondsPersecond + tv.tv_usec ;
     }
 
+    static int64_t cachedtime();
+    static struct tm * timetoStruct();
+    static std::string CurrentTimeStringWithCached(){
+        struct tm * locoaltimeStruct = timetoStruct();
+        std::string time_s(asctime(locoaltimeStruct));
+        return time_s;
+    }
+
 private:
     int64_t mircotime_;
 

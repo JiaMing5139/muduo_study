@@ -7,6 +7,7 @@
 #include <time.h>
 #include <sstream>
 #include <string.h>
+#include "Timer/Timestamp.h"
 #include "../base/currentThread.h"
 namespace Jimmy {
 Logger::LogLevel initLogLevel(){
@@ -31,11 +32,6 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
     Logger::Logger(const std::string & file, int line, Logger::LogLevel level, const char *func,bool ifabort):
     ifabort(ifabort)
     {
-        time_t seconds = ::time(nullptr);
-       auto locoaltimeStruct = localtime(&seconds);
-        std::string time_s(asctime(locoaltimeStruct));
-      //  std::string time_s ="None";
-       // time_s.pop_back();
         std:: string log_type;
         switch (level){
             case TRACE: log_type = "TRACE";
@@ -43,7 +39,7 @@ void Jimmy::Logger::setLevel(Jimmy::Logger::LogLevel level) {
             case ERROR:log_type = "ERROR";
                 break;
         }
-        _os<<"tid:" << Jimmy::CurrentThread::tid() << " " << time_s <<" "<< file <<" line:" << line << " " <<  log_type <<" ";
+        _os<<"tid:" << Jimmy::CurrentThread::tid() << " " << Timestamp::CurrentTimeStringWithCached()  <<" "<< file <<" line:" << line << " " <<  log_type <<" ";
     }
 
 

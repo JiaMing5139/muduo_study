@@ -68,7 +68,6 @@ public:
     }
 
     std:: string peekAllAsString(){
-
         std::string result(peek(), readableBytes());
         return result;
     }

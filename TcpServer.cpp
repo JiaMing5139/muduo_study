@@ -28,7 +28,7 @@ TcpServer::TcpServer(const InetAddress &addr,EventLoop * loop):
 acceptor_(addr,loop),
 loop_(loop),
 localaddr_(addr),
-eventLoopThreadPool_(loop,2)
+eventLoopThreadPool_(loop,1)
 {
 
 }

@@ -31,7 +31,7 @@ void g_output(const char * msg,size_t len){
 }
 
 void setAsynLog(){
-    //Jimmy::Logger::setOutput(g_output);
+    Jimmy::Logger::setOutput(g_output);
     Jimmy::Logger::setLevel(Jimmy::Logger::TRACE);
     asyn->start();
 }

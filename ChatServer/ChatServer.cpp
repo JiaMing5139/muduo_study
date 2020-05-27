@@ -60,6 +60,9 @@ void ChatServer::onProtobufErroMessage(Buffer * buff, std::shared_ptr<TcpConnect
 void ChatServer::handelMessageChat( DisPatcher::Messageptr msg) {
     LOG_TRACE <<"handle MessageChat" ;
     std::shared_ptr<Jimmy::MessageChat> chatMessage =   std::static_pointer_cast<Jimmy::MessageChat>(msg);
+    Buffer buff;
+    int len;
+    codec_.FillBuffer(msg ,buff,len);
     for(const auto & conn : tcpConnWeakPtrs_){
         conn->send(chatMessage->datapayload());
         }
