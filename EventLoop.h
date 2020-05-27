@@ -19,6 +19,7 @@ public:
     typedef std::vector<Channelptr> Channelptrlist;
     void assertInLoopThread(){
         if(!runInthread()){
+
             abortInthread();
         }
     }

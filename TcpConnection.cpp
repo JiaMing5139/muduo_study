@@ -24,7 +24,7 @@ kStatus_(closed),
 loop_(loop)
 {  // refcount of channel =  1
 //    channel_->enableWrite();
-    sockfd_.setTcpNoDelay(true);
+    //sockfd_.setTcpNoDelay(true);
   //  sockfd_.setReuseAddr(true);
    // sockfd_.setKeepAlive(true);
     writeCompleteCallback  = defaultCompleteCallback;
@@ -38,6 +38,7 @@ void TcpConnection::buildConnection(EventLoop * ioloop) {
     channel_->setWriteCallBack(bind(&TcpConnection::handleWriteEvent,this));
     channel_->setReadCallBack(bind(&TcpConnection::handReadEvent,this));
     channel_->setCloseCallBack(bind(&TcpConnection::handleCloseEvent,this));
+    channel_->setErrorCallBack(bind(&TcpConnection::handleError,this));
   //  channel_->enableRead();//refcount of channel =  2 channelMap +1
     ioloop->runInLoop(std::bind(&Channel::enableRead,channel_));
     assert(onConnection_);
@@ -63,8 +64,13 @@ void TcpConnection::handReadEvent() {
 
             handleCloseEvent();
         }else if (n <0){
-            if (savedErrno != 11)
+
+            if (savedErrno != 11 && savedErrno != 104)
                 LOG_SYSFATAL <<" readv";
+            if(savedErrno == 104) {
+                handleCloseEvent();
+            }
+
         }else{
             LOG_TRACE<<"Tcpserver: newReadEvent:" <<peerAddr()<<"->"
                      <<localAddr();
@@ -244,6 +250,10 @@ TcpConnection::~TcpConnection() {
     LOG_TRACE<<"TcpConnection: ~TcpConnection:" <<peerAddr()<<"->"
              << localAddr() <<" status:" << this->kStatus_  ;
         kStatus_ = overed;
+}
+
+void TcpConnection::handleError() {
+
 }
 
 

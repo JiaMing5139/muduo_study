@@ -21,7 +21,7 @@
 #include "httpForTest/httpRequest.h"
 #include "httpForTest/Response.h"
 #include "LoopThreadPool.h"
-
+#include "TcpClient.h"
 
 /**  Test Asynlog  **/
 
@@ -31,7 +31,7 @@ void g_output(const char * msg,size_t len){
 }
 
 void setAsynLog(){
-    Jimmy::Logger::setOutput(g_output);
+    //Jimmy::Logger::setOutput(g_output);
     Jimmy::Logger::setLevel(Jimmy::Logger::TRACE);
     asyn->start();
 }
@@ -216,6 +216,7 @@ void testUploadServer(){
     InetAddress addr(2333);
     std::cout << addr << std::endl;
     TcpServer tcpServer(addr,loop);
+    tcpServer.start();
     tcpServer.setOnMessageCallback([](Buffer * buff,TcpServer::TcpConnectionptr conn){
         FILE * file = fopen("uploadFile","wb");
         if(!file){
@@ -237,6 +238,7 @@ void testEchoserver(){
     InetAddress addr(2333);
     std::cout << addr << std::endl;
     TcpServer tcpServer(addr,loop);
+    tcpServer.start();
     tcpServer.setOnMessageCallback([](Buffer * buf,TcpServer::TcpConnectionptr conn){
         conn->send(buf->retrieveAllAsString());
     });
@@ -254,6 +256,7 @@ void testHttpServer(){
     InetAddress addr(2333);
     std::cout << addr << std::endl;
     TcpServer tcpServer(addr,loop);
+    tcpServer.start();
     tcpServer.setOnMessageCallback([](Buffer * buf,TcpServer::TcpConnectionptr conn){
         httpRequest request ;
         string msg(buf->retrieveAllAsString());
@@ -297,11 +300,26 @@ void testEventThreaddPool() {
 
 }
 
-/**test Connector**/
+/**test block_testTcpClient**/
 
-void testConnector(){
-
+void testTcpClient(){
+    loop= new EventLoop;
+    InetAddress addr("10.211.55.2",23333);
+    LOG_TRACE << "connect:" << addr ;
+    TcpClient tcpClient(loop,addr);
+    tcpClient.setOnMessageCallback([](Buffer * buf,TcpServer::TcpConnectionptr conn){
+        LOG_TRACE << "onMessage:" << conn->peerAddr() ;
+        conn->send(buf->retrieveAllAsString());
+    });
+    tcpClient.setOnConnectionCallback([](TcpServer::TcpConnectionptr conn){
+        LOG_TRACE << "connect successful" ;
+    });
+    tcpClient.start();
+    loop->loop();
 }
+
+/**test ChatServer Chanclient**/
+
 
 
 int main() {
@@ -314,9 +332,12 @@ int main() {
     // testAccepotr();
      //testDownloadserver();
     //testBuffer();
-    testHttpServer();
+      testHttpServer();
     //testEchoserver();
     // testEventThreaddPool();
-//   std:: cout <<readFile("test") <<std::endl;
+    //testConnector();
+   // testTcpClient();
+   //testChatServer();
+
 
 }

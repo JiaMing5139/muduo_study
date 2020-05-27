@@ -28,11 +28,12 @@ public:
     void setOnMessageCallback(readTcpEventCallback cb){onMessage_ =cb;}
     void setOnConnectionCallback(TcpEventCallback cb){onConnection_ =cb;}
     void setOnWriteCompleteCallback(TcpEventCallback cb){writeCompleteCallback =cb;}
-
+    void start();
 
 private:
     void removeInLoop(const TcpConnectionptr &);
     void removeTcpConnection(const TcpConnectionptr &);
+
     readTcpEventCallback onMessage_;
 
     TcpEventCallback onConnection_;

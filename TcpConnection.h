@@ -41,6 +41,7 @@ public:
     void handReadEvent();
     void handleCloseEvent();
     void handleWriteEvent();
+    void handleError();
 
     void send(const std::string & msg);
     void send(Buffer * buffer);

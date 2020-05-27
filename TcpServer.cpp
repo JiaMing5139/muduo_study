@@ -28,12 +28,12 @@ TcpServer::TcpServer(const InetAddress &addr,EventLoop * loop):
 acceptor_(addr,loop),
 loop_(loop),
 localaddr_(addr),
-eventLoopThreadPool_(loop,4)
+eventLoopThreadPool_(loop,2)
 {
-     acceptor_.setNewConnectionCallback(std::bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
-     loop->runInLoop(std::bind(&Acceptor::listen,&acceptor_));
-     eventLoopThreadPool_.start();
+
 }
+
+
 
 void TcpServer::newConnectionCallback( int fd, const InetAddress & peerAddress) {
     EventLoop * subloop = eventLoopThreadPool_.getLoop();
@@ -65,6 +65,12 @@ void TcpServer::removeInLoop(const TcpConnectionptr & conn) {
     int ret = tcpConnectionMap_.erase(conn->fd());
     assert(ret != 0);
 
+}
+
+void TcpServer::start() {
+    acceptor_.setNewConnectionCallback(std::bind(&TcpServer::newConnectionCallback,this,std::placeholders::_1,std::placeholders::_2));
+    loop_ ->runInLoop(std::bind(&Acceptor::listen,&acceptor_));
+    eventLoopThreadPool_.start();
 }
 
 

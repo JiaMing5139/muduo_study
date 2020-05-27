@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+package Jimmy;
+
+message MessageChat {
+    required int64 sequence = 1;
+    optional int32 fileSize = 2;
+    required bytes dataPayload = 3;
+}
+
+message Command {
+    enum type{
+        List = 0;
+        Quit = 1;
+    }
+    required int64 sequence = 1;
+
+
+}
+message Response {
+    required bool ack = 1;
+    required int64 sequence = 2;
+}
+
+

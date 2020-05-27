@@ -27,7 +27,9 @@ void sockets::fromIpPort(const char* ip, uint16_t port,
 {
     addr->sin_family = AF_INET;
     addr->sin_port = htons(port);
-    if (::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0)
+ //   if(inet_aton(ip, &addr->sin_addr) < 0)
+     LOG_TRACE <<"inet_pton " << ip ;
+    if (::inet_pton(AF_INET, ip, (void*)&addr->sin_addr) <= 0)
     {
         LOG_SYSFATAL << "sockets::fromIpPort";
     }
@@ -152,7 +154,13 @@ struct sockaddr* sockets::sockaddr_cast(struct sockaddr_in* addr)
 void sockets::shutdown(int fd,int how){
     if (::shutdown(fd, SHUT_WR) < 0)
     {
+        if(errno != 107) //Transport endpoint is not connected
         LOG_SYSFATAL << "sockets::shutdownWrite";
     }
+}
+
+int sockets::connect(int sockfd, const struct sockaddr* addr)
+{
+    return ::connect(sockfd, addr, static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
 }
 

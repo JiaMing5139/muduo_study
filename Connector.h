@@ -41,7 +41,7 @@
 //        void stopInLoop();
          void connect();
 //        void connecting(int sockfd);
-//        void handleWrite();
+         void handleWrite();
 //        void handleError();
 //        void retry(int sockfd);
 //        int removeAndResetChannel();

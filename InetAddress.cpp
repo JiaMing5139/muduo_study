@@ -31,7 +31,7 @@ portstr_(port)
     if(ipv6){
 
     }else{
-        sockets::fromIpPort(ip.c_str(),port,&addr_);
+        sockets::fromIpPort(ipstr_.c_str(),port,&addr_);
     }
 
 }

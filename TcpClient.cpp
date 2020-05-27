@@ -3,3 +3,55 @@
 //
 
 #include "TcpClient.h"
+#include "log/logger.h"
+#include "TcpConnection.h"
+TcpClient::TcpClient(EventLoop *loop, const InetAddress &addr):
+connector_(loop,addr),
+baseloop_(loop),
+status_(closed)
+{
+
+}
+
+void TcpClient::start() {
+    if(status_ == closed){
+        status_ = connecting;
+        connector_.setNewConnectionCallback(bind(&TcpClient::newConnection,this,std::placeholders::_1));
+        connector_.start();
+
+    }
+
+}
+
+void TcpClient::newConnection(int fd) {
+    LOG_TRACE << "TcpClient: newConnection status:"<< status_ ;
+    if(status_ == connecting) {
+
+        TcpConnectionptr tcpConnectionptr(new TcpConnection(baseloop_, fd), [](TcpConnection *conn) {
+            LOG_TRACE << "Deleter of Tcpconnection";
+            delete conn;
+        });
+        InetAddress localaddr;
+        tcpConnectionptr->setInetAddress(connector_.serverAddress(),localaddr);
+
+        LOG_TRACE << "Tcpclient NewConnectionacallback:" << tcpConnectionptr->peerAddr() << "->"
+                  << tcpConnectionptr->localAddr() << " assigned fd:" << fd;
+        tcpConnectionptr->setOnMessageCallback(onMessage_);
+        tcpConnectionptr->setOnConnectionCallback(onConnection_);
+        tcpConnectionptr->setOnClosedCallback(std::bind(&TcpClient::removeTcpConnection, this));
+        tcpConnectionptr->buildConnection(baseloop_);
+        tcpConnectionptr_ = std::move(tcpConnectionptr);
+        status_ = connected;
+        onConnection_(tcpConnectionptr_);
+    }
+}
+
+void TcpClient::removeTcpConnection() {
+    if(status_ == connected)
+    tcpConnectionptr_.reset();
+
+}
+
+void TcpClient::send(const std::string & msg) {
+    tcpConnectionptr_->send(msg);
+}

@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <vector>
 #include <sstream>
+#include <string.h>
 class Buffer : public Copyable{
 public:
 
@@ -35,6 +36,13 @@ public:
     const char * peek() {
         return begin() + readerIndex_;
     };
+
+     int32_t peekInt32(){
+         int32_t be32 = 0;
+         ::memcpy(&be32, peek(), sizeof(be32));
+         //FIXME net to nost
+         return be32;
+    }
 
     void retrieveAll() {
         readerIndex_ = kCheapPrepend;
@@ -76,7 +84,7 @@ public:
         std::copy(data, data + len , &buffer_[writerIndex_]);
         writerIndex_ += len;
     }
-    void append(std::string msg){
+    void append(const std::string & msg){
         ensureSpace(msg.length());
         std::copy(msg.c_str(), msg.c_str() + msg.length()  , &buffer_[writerIndex_]);
         writerIndex_ += msg.length() ;
