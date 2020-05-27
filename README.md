@@ -1,6 +1,6 @@
 # muduo_study
 从零用c++11实现muduo的核心功能
-
+实现两个例子HttpEchoServer和Chat with protobuf
 
 #### 参考书籍
 ```
@@ -13,6 +13,12 @@ Linux 多线程服务端编程
 Cmake CMakeLists.text
 
 make
+
+ChatServer
+cd ChatServer
+cmake CMakeList
+./bin/ChatServer port
+./bin/ChatClient ip port
 ```
 ## 笔记
 ## TcpConnection 
@@ -122,8 +128,9 @@ Timer/TimerQueueBase
 200| 7378| 6873 |6210 |
 
 #### 优化LOG,对时间进行缓冲，尽量少调用localtime
+并发数\线程数 | 1 |  2 | 4 
+-|-|-|-
+50| 9033 | 14363 |12409 |
+200| 9560| 13164 |12728 |
 
-# To do list
-
-- connector
 
