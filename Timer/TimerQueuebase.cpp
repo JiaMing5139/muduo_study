@@ -31,13 +31,19 @@ void TimerQueuebase::addTimerInLoop(std::shared_ptr<Timer> timer) {
     }
 }
 
-void TimerQueuebase::addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval) {
+TimerId TimerQueuebase::addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval) {
     std::shared_ptr<Timer> timer(new Timer(cb,timestamp,interval));
+    TimerId ret(timestamp,timer);
     loop_->runInLoop(std::bind(&TimerQueuebase::addTimerInLoop,this,timer));
+    return ret;
 
 }
 
-void TimerQueuebase::cancel() {
+void TimerQueuebase::cancel(const TimerId & id) {
+        auto timerpair= id.getPair();
+        if (timerpair.second){
+            timerList_.erase(timerpair);
+        }
 
 }
 

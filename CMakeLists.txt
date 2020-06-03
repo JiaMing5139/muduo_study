@@ -52,7 +52,7 @@ add_executable(muduo_study
         Timer/TimerQueuebaseMacos.h Connector.cpp Connector.h
         TcpClient.cpp
         TcpClient.h
-        )
+        RpcServer/RpcServer.cpp RpcServer/RpcServer.h Timer/TimerId.cpp Timer/TimerId.h)
 find_package (Threads REQUIRED)
 
 target_link_libraries(muduo_study

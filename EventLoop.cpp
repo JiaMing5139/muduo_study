@@ -107,19 +107,19 @@ void EventLoop::quit() {
     }
 }
 
-void EventLoop::runAt(Timestamp timerstamp, TimerCallback cb) {
-    timerQueue.addTimer(timerstamp,cb,0);
+TimerId EventLoop::runAt(Timestamp timerstamp, TimerCallback cb) {
+    return timerQueue.addTimer(timerstamp,cb,0);
 
 }
 
-void EventLoop::runAfter(double delay, TimerCallback cb) {
+TimerId EventLoop::runAfter(double delay, TimerCallback cb) {
     Timestamp timestamp(addTime(Timestamp::now(),delay));
-    timerQueue.addTimer(timestamp,cb,0);
+    return timerQueue.addTimer(timestamp,cb,0);
 }
 
-void EventLoop::runEvery(double interval, TimerCallback cb) {
+TimerId EventLoop::runEvery(double interval, TimerCallback cb) {
     Timestamp timestamp(addTime(Timestamp::now(),interval));
-    timerQueue.addTimer(timestamp,cb,interval);
+    return timerQueue.addTimer(timestamp,cb,interval);
 }
 
 void EventLoop::runInLoop( funcCallback cb) {
@@ -176,6 +176,16 @@ void EventLoop::wakeup() {
     wakeUpfd_.eventfd_write();
 //
 }
+
+void EventLoop::cancleTimer(const TimerId &id) {
+    runInLoop(std::bind(&EventLoop::cancleTimerInloop,this,id));
+}
+
+void EventLoop::cancleTimerInloop(const TimerId &id) {
+    timerQueue.cancel(id);
+}
+
+
 
 
 

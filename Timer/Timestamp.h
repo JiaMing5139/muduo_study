@@ -20,6 +20,7 @@ public:
     friend bool operator == (const Timestamp & ,const Timestamp &);
     friend  std::ostream & operator << (std::ostream & , const Timestamp &);
     Timestamp(int64_t microTime);
+    Timestamp() = default;
 
     static const int kMicroSecondsPersecond = 1000 * 1000;
 

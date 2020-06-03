@@ -6,6 +6,7 @@
 #define MUDUO_STUDY_TIMERQUEUE_H
 #include "../base/noncopyable.h"
 #include "Timer.h"
+#include "TimerId.h"
 class Timestamp;
 class TimerQueuebase;
 class EventLoop;
@@ -14,8 +15,8 @@ class TimerQueue: public noncopyable {
 public:
     explicit TimerQueue(EventLoop*);
     ~TimerQueue();
-    void addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval);
-    void cancel();
+    TimerId addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval);
+    void cancel(const TimerId & id);
 
 
 private:

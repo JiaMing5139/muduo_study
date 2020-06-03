@@ -10,6 +10,7 @@
 #include "Timer.h"
 #include <set>
 #include <memory>
+#include "TimerId.h"
 class Timestamp;
 class Channel;
 class EventLoop;
@@ -21,8 +22,8 @@ class TimerQueuebase {
     typedef std::vector<entry> TimerVec;
 public:
     explicit TimerQueuebase(EventLoop * loop);
-    void addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval);
-    void cancel();
+    TimerId addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval);
+    void cancel(const TimerId & id);
 
     void addTimerInLoop(std::shared_ptr<Timer> timer);
 private:

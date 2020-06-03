@@ -4,13 +4,11 @@
 
 #include "TimerQueue.h"
 #include "TimerQueuebase.h"
-void TimerQueue::addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval) {
-    timerimpl_->addTimer(timestamp,cb,interval);
+TimerId TimerQueue::addTimer(Timestamp timestamp,Timer::TimerCallback cb,double interval) {
+    return timerimpl_->addTimer(timestamp,cb,interval);
 }
 
-void TimerQueue::cancel() {
-    timerimpl_->cancel();
-}
+
 
 TimerQueue::TimerQueue(EventLoop * loop):timerimpl_(new TimerQueuebase(loop)) {
 
@@ -18,4 +16,8 @@ TimerQueue::TimerQueue(EventLoop * loop):timerimpl_(new TimerQueuebase(loop)) {
 
 TimerQueue::~TimerQueue() {
     delete timerimpl_;
+}
+
+void TimerQueue::cancel(const TimerId &id) {
+     timerimpl_->cancel(id);
 }

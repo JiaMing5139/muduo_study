@@ -31,7 +31,7 @@ void g_output(const char * msg,size_t len){
 }
 
 void setAsynLog(){
-    Jimmy::Logger::setOutput(g_output);
+  //  Jimmy::Logger::setOutput(g_output);
     Jimmy::Logger::setLevel(Jimmy::Logger::TRACE);
     asyn->start();
 }
@@ -75,10 +75,12 @@ void testTimerQueue(){
     loop= new EventLoop;
     TimerQueue base(loop);
     Timestamp timestamp(Timestamp::now());
-
-    std::thread t([](){
-        loop->runAfter(3,std::bind(&timeout, 1));
+    TimerId id;
+    std::thread t([&](){
+      id =  loop->runEvery(2,std::bind(&timeout, 1));
+        loop->cancleTimer(id);
     });
+
 
 
     loop->loop();
@@ -326,13 +328,13 @@ int main() {
      setAsynLog();
     //loggerTest();
     //testEventLoop();
-    //testTimerQueue();
+    testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
     // testAccepotr();
      //testDownloadserver();
     //testBuffer();
-      testHttpServer();
+     // testHttpServer();
     //testEchoserver();
     // testEventThreaddPool();
     //testConnector();

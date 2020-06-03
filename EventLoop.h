@@ -33,14 +33,16 @@ public:
 
 
     // TimerId用于指定定时器操作（像取消操作) 尚未实现
-    void runAt(Timestamp timerstamp, TimerCallback cb);
-    void runAfter(double delay, TimerCallback cb);
-    void runEvery(double interval, TimerCallback cb);
+    TimerId runAt(Timestamp timerstamp, TimerCallback cb);
+    TimerId runAfter(double delay, TimerCallback cb);
+    TimerId runEvery(double interval, TimerCallback cb);
+    void cancleTimer(const TimerId & id);
 
 
     void runInLoop( funcCallback  cb);
 
 private:
+    void cancleTimerInloop(const TimerId &id);
     bool runInthread();
     void abortInthread();
 
