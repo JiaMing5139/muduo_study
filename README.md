@@ -8,15 +8,20 @@ Linux 多线程服务端编程
 ```
 
 #### 编译
+Reactor服务器
 ```
 (Cmake Version >= 3.1.5)
 Cmake CMakeLists.text
-
 make
-
+./muduo_study
+```
+ChatServer
+```
+(protobuf 3.12.2)
 ChatServer
 cd ChatServer
 cmake CMakeList
+make
 ./bin/ChatServer port
 ./bin/ChatClient ip port
 ```
@@ -107,8 +112,9 @@ Timer/TimerQueueBase
 
 
 # Benchmark
-测试Http Echo Serve
-测试工具 ab 
+测试Http Echo Serve <br>
+测试工具 ab <br>
+测试机器:CPU 2核， 内存2G
 #### 无LOG 禁用Nagle
 并发数\线程数 | 1 |  2 | 4 
 -|-|-|-
