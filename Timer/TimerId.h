@@ -10,6 +10,7 @@
 #include "Timestamp.h"
 
 class Timer;
+
 class TimerId {
 public:
     TimerId() = default;

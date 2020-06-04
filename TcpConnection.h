@@ -5,6 +5,7 @@
 #ifndef MUDUO_STUDY_TCPCONNECTION_H
 #define MUDUO_STUDY_TCPCONNECTION_H
 
+#include "Timer/TimeWheel.h"
 #include <memory>
 #include <atomic>
 #include "base/CallBack.h"
@@ -51,9 +52,18 @@ public:
     void setOnConnectionCallback(TcpEventCallback cb){onConnection_ =cb;}
     void setOnClosedCallback(TcpEventCallback cb){closeCallback = cb;}
     void setOnWriteCompleteCallback(TcpEventCallback cb){writeCompleteCallback =cb;}
+    void setTimeWheelEntry(const TimeWheel::ConnEntryPtr& connEntryPtr){
+        connEntryWeakPtr_ = connEntryPtr;
+    }
+
+     TimeWheel:: ConnEntryWeakPtr getTimeWheelEntry(){
+         return connEntryWeakPtr_;
+    }
+
 
 
 private:
+    TimeWheel::ConnEntryWeakPtr connEntryWeakPtr_;
     void destoryChannel();
     readTcpEventCallback onMessage_;
 

@@ -22,6 +22,7 @@
 #include "httpForTest/Response.h"
 #include "LoopThreadPool.h"
 #include "TcpClient.h"
+#include "Timer/TimeWheel.h"
 
 /**  Test Asynlog  **/
 
@@ -320,7 +321,26 @@ void testTcpClient(){
     loop->loop();
 }
 
-/**test ChatServer Chanclient**/
+/**test TimeWheel**/
+void testTimeWheel(){
+    loop= new EventLoop;
+
+    InetAddress addr(2333);
+    std::cout << addr << std::endl;
+    TcpServer tcpServer(addr,loop);
+    tcpServer.start();
+    TimeWheel timeWheel(loop,5); // kick out connection without talking for 3second
+    tcpServer.setOnMessageCallback([&](Buffer * buf,TcpServer::TcpConnectionptr conn){
+        auto  k = conn->getTimeWheelEntry();
+        timeWheel.upadateConnection(k);
+        conn->send(buf->retrieveAllAsString());
+    });
+    tcpServer.setOnConnectionCallback([&](TcpServer::TcpConnectionptr conn){
+        auto enty =  timeWheel.addConnection(conn);
+        conn->setTimeWheelEntry(enty);
+    });
+    loop->loop();
+}
 
 
 
@@ -328,18 +348,19 @@ int main() {
      setAsynLog();
     //loggerTest();
     //testEventLoop();
-    testTimerQueue();
+   // testTimerQueue();
     //testRunInLoop();
    // testEventLoopThread();
     // testAccepotr();
      //testDownloadserver();
     //testBuffer();
      // testHttpServer();
-    //testEchoserver();
+  //  testEchoserver();
     // testEventThreaddPool();
     //testConnector();
    // testTcpClient();
    //testChatServer();
+    testTimeWheel();
 
 
 }
