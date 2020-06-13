@@ -33,10 +33,12 @@ void Connector::stop() {
 void Connector::connect() {
     int fd = sockets::createblockingOrDie(AF_INET);
     int ret = sockets::connect(fd, serverAddr_.getSockaddr());
-    if (ret < 0 && errno != EINPROGRESS) {
-        LOG_SYSFATAL << "connect";
+    if (ret < 0 && errno != EINTR ) {
+        LOG_TRACE << "connect failed: " <<  serverAddr_;
+    }else{
+        newConnectionCallback_(fd);
     }
-    newConnectionCallback_(fd);
+
 }
 
 

@@ -12,6 +12,12 @@ status_(closed)
 {
 
 }
+void TcpClient::disconnect(){
+    status_ = closing;
+    if(tcpConnectionptr_){
+        tcpConnectionptr_->shutdown();
+    }
+}
 
 void TcpClient::start() {
     if(status_ == closed){
@@ -40,15 +46,22 @@ void TcpClient::newConnection(int fd) {
         tcpConnectionptr->setOnConnectionCallback(onConnection_);
         tcpConnectionptr->setOnClosedCallback(std::bind(&TcpClient::removeTcpConnection, this));
         tcpConnectionptr->buildConnection(baseloop_);
+        onConnection_(tcpConnectionptr_);
         tcpConnectionptr_ = std::move(tcpConnectionptr);
         status_ = connected;
-        onConnection_(tcpConnectionptr_);
+       
     }
 }
 
 void TcpClient::removeTcpConnection() {
-    if(status_ == connected)
-    tcpConnectionptr_.reset();
+    if(status_ == closing)
+    {
+        LOG_TRACE << "TcpClient tcpconnection closed" ;
+        tcpConnectionptr_.reset();
+        status_ =closed;
+    }
+
+
 
 }
 

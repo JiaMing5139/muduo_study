@@ -27,3 +27,4 @@ message RpcMessage
     optional bytes response = 6;
     optional ErrorCode error = 7;
 }
+

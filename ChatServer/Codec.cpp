@@ -38,8 +38,9 @@ Codec::MessagePtr Codec::parse( const char * buff, int len,ErrorCode * errncode 
     std::cout << typelen <<std::endl;
     std::string typeName(buff + kHeadersize , typelen - 1);
     std::cout << typeName <<std::endl;
-    std::string typeName1("Jimmy.MessageChat");
-    ret.reset(createMessage(typeName1));
+   // std::string typeName1("Jimmy.MessageChat");
+
+    ret.reset(createMessage(typeName));
     if(ret){
         const char * start = buff + kHeadersize + typelen;
         int32_t  datalen = len - kHeadersize - typelen;
@@ -100,12 +101,10 @@ void Codec::onMessage(Buffer *buff, Codec::TcpConnectionPtr conn) {
                 buff->retrieve(len);
                 LOG_TRACE << "ErrorCode:" << errorCode;
                 if(errorCode == kNoError){
-
                     if(onMessageCompleteCallback_){
                         LOG_TRACE << "call onProtobufMessage";
                         onMessageCompleteCallback_(messagePtr,std::move(conn));
                     }
-
                 }else{
                     onErrorCallback_(buff,std::move(conn));
                 }

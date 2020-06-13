@@ -15,6 +15,7 @@
 #include "Socket.h"
 class Channel;
 class EventLoop;
+class RpcChannel;
 class TcpConnection: public std::enable_shared_from_this<TcpConnection>, public noncopyable  {
 public:
      enum status{
@@ -23,7 +24,7 @@ public:
          closing,
          overed,
      };
-
+    typedef std::shared_ptr<RpcChannel> RpchannelPtr;
     typedef std::shared_ptr<Channel> Channelptr;
     typedef std::shared_ptr<TcpConnection> TcpConnectionptr;
     explicit TcpConnection(EventLoop *, int fd);
@@ -44,6 +45,7 @@ public:
     void handleWriteEvent();
     void handleError();
 
+    bool connected(){ return kStatus_ == kConnected;}
     void send(const std::string & msg);
     void send(Buffer * buffer);
     void shutdown();
@@ -59,11 +61,15 @@ public:
      TimeWheel:: ConnEntryWeakPtr getTimeWheelEntry(){
          return connEntryWeakPtr_;
     }
+    void setRpcChannel(RpchannelPtr rpchannelPtr){
+         rpchannelPtr_ = rpchannelPtr;
+    }
 
 
 
 private:
     TimeWheel::ConnEntryWeakPtr connEntryWeakPtr_;
+
     void destoryChannel();
     readTcpEventCallback onMessage_;
 
@@ -83,6 +89,7 @@ private:
     Buffer outputBuffer_;
     Buffer inputBuffer_;
 
+    RpchannelPtr rpchannelPtr_;
     Channelptr channel_;
     Socket sockfd_;
     EventLoop * loop_;

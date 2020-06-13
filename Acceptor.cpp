@@ -23,7 +23,6 @@ localAddr_(addr)
     listenfd_.setReusePort(true);
     listenfd_.bindAddress(addr);
 
-   // listenfd_.setReusePort(true);
 }
 
 Acceptor::Acceptor(const InetAddress &addr,EventLoop * loop):

@@ -18,14 +18,16 @@ public:
     enum status{
         connecting,
         connected,
+        closing,
         closed,
     };
 
     typedef std::shared_ptr<TcpConnection> TcpConnectionptr;
     TcpClient(EventLoop * loop,const InetAddress & addr );
     void start();
+    void disconnect();
     void send(const std::string & msg);
-
+    TcpConnectionptr connection(){return tcpConnectionptr_;}
     void setOnMessageCallback(readTcpEventCallback cb){onMessage_ =cb;}
     void setOnConnectionCallback(TcpEventCallback cb){onConnection_ =cb;}
     void setOnWriteCompleteCallback(TcpEventCallback cb){writeCompleteCallback =cb;}

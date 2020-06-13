@@ -40,9 +40,10 @@ void TcpConnection::buildConnection(EventLoop * ioloop) {
     channel_->setCloseCallBack(bind(&TcpConnection::handleCloseEvent,this));
     channel_->setErrorCallBack(bind(&TcpConnection::handleError,this));
   //  channel_->enableRead();//refcount of channel =  2 channelMap +1
-    ioloop->runInLoop(std::bind(&Channel::enableRead,channel_));
     assert(onConnection_);
     onConnection_(shared_from_this());
+    ioloop->runInLoop(std::bind(&Channel::enableRead,channel_));
+
 }
 
 void TcpConnection::cancel() {
