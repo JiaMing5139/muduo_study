@@ -65,22 +65,13 @@ TcpConnection必须位于handlecloseEvent中的最后一行，因为在调用Tcp
 ```
 
 
-#### Q3:TcpConnection相关的临界区和race condition
 
 ## 定时器队列
 
 #### Q1:为什么已经有了Timerfd，还要用TimerQueue去维护定时器的触发？
 ```
-减少文件描述符的使用，若不用timerQueue，一秒内创建1000个定时器，则需要向epoll/poll注册1000个可读事件
-而使用TimerQueue时，只维护一个最早的触发的fd,当TimerQueue中的timerfd事件触发时，触发后将一秒内的定时
-器事件全部手动触发。这在每一秒内只用维护一个fd，一分钟最多60个。
+减少同一时间文件描述符的使用，如果要维护1000个定时器，都用timerfd则需要使用1000个文件描述符
 
-相关实现:
-Timer/TimerStamp:
-    friend bool operator < (const Timestamp & ,const Timestamp &);
-    friend bool operator == (const Timestamp & ,const Timestamp &);
-    
-Timer/TimerQueueBase
 ```     
 #### Q2:TimerQueue中维护Timer的数据结构？
 ```
@@ -96,17 +87,11 @@ Timer/TimerQueueBase
 定时器查找：Timer/TimerQueueBase : handleEvent
 定时器添加: Timer/TimerQueueBase : addTimer
 
-```
-#### Q3：Timer的线程安全性，Timer属于EventLoop，而EventLoop中的成员会被多个线程看到，如果在多个线程向TimerQueue添加如何保证安全？
 
-#### Q4: 如何实现对指定Timer的删除？
 
 ```
 
 ```
-
-
-## 异步日志 
 
 
 
