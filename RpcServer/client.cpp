@@ -16,7 +16,7 @@ public:
             : loop_(loop),
               client_(loop, serverAddr),
               channel_(new RpcChannel),
-              AppendEntriesServiceStub_(channel_.get())
+              AppendEntriesServiceStub_(channel_.get())  //stub需要一个 google::protobuf::rpcChannel ，最终会调用rpcChannel中的CallMethod来发送数据
     {
 
     }
